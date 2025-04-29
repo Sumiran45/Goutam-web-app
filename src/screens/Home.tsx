@@ -5,6 +5,7 @@ import { CalendarScreen } from '../screens/tabs/calender';
 import { StatsScreen } from '../screens/tabs/stats';
 import { NotesScreen } from '../screens/tabs/notes';
 import { SettingsScreen } from '../screens/tabs/settings';
+import ShopScreen from './tabs/Shop';
 
 const Tab = createBottomTabNavigator();
 
@@ -17,7 +18,7 @@ const AppNavigator = () => {
 
           if (route.name === 'Calendar') {
             iconName = '📅';
-          } else if (route.name === 'Stats') {
+          } else if (route.name === 'Shop') {
             iconName = '📊';
           } else if (route.name === 'Notes') {
             iconName = '📝';
@@ -46,7 +47,8 @@ const AppNavigator = () => {
       })}
     >
       <Tab.Screen name="Calendar" component={CalendarScreen} />
-      <Tab.Screen name="Stats" component={StatsScreen} />
+      {/* <Tab.Screen name="Stats" component={StatsScreen} /> */}
+      <Tab.Screen name = "Shop" component={ShopScreen}/>
       <Tab.Screen name="Notes" component={NotesScreen} />
       <Tab.Screen name="Settings" component={SettingsScreen} />
     </Tab.Navigator>
