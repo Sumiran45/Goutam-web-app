@@ -1,138 +1,129 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
+import React from 'react';
+import { 
+  View, 
+  Text, 
+  TextInput, 
+  TouchableOpacity, 
+  Image, 
+  KeyboardAvoidingView, 
+  Platform,
+  ScrollView,
+  SafeAreaView
+} from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
+import { useRegister } from '../src/controller/Register.controller';
+import { styles } from '../src/styles/Register.style';
 
 export default function RegisterScreen({ navigation }: any) {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [errors, setErrors] = useState<{ email?: string; password?: string; confirmPassword?: string }>({});
-
-  const validate = () => {
-    const newErrors: typeof errors = {};
-    if (!email) newErrors.email = 'Email is required';
-    else if (!/\S+@\S+\.\S+/.test(email)) newErrors.email = 'Invalid email format';
-
-    if (!password) newErrors.password = 'Password is required';
-    else if (password.length < 6) newErrors.password = 'Minimum 6 characters';
-
-    if (confirmPassword !== password) newErrors.confirmPassword = 'Passwords do not match';
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleRegister = () => {
-    if (validate()) {
-      navigation.navigate('Login');
-    }
-  };
+  const {
+    email,
+    password,
+    confirmPassword,
+    showPassword,
+    showConfirmPassword,
+    errors,
+    handleEmailChange,
+    handlePasswordChange,
+    handleConfirmPasswordChange,
+    togglePasswordVisibility,
+    toggleConfirmPasswordVisibility,
+    handleRegister,
+  } = useRegister(navigation);
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Register</Text>
+    <SafeAreaView style={styles.safeArea}>
+      <KeyboardAvoidingView 
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={styles.container}
+      >
+        <ScrollView 
+          contentContainerStyle={styles.scrollContainer}
+          showsVerticalScrollIndicator={false}
+        >
+          <View style={styles.logoContainer}>
+            <Image 
+              source={require('../assets/images/bear.png')} 
+              style={styles.logo} 
+              resizeMode="contain"
+            />
+            <Text style={styles.welcomeText}>Create Account</Text>
+          </View>
 
-      <TextInput
-        placeholder="Email"
-        value={email}
-        onChangeText={setEmail}
-        style={styles.input}
-      />
-      {errors.email && <Text style={styles.error}>{errors.email}</Text>}
+          <View style={styles.formContainer}>
+            <Text style={styles.title}>Register</Text>
 
-      <View style={styles.passwordContainer}>
-        <TextInput
-          placeholder="Password"
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry={!showPassword}
-          style={[styles.input, { flex: 1 }]}
-        />
-        <TouchableOpacity onPress={() => setShowPassword(!showPassword)} style={styles.passwordToggle}>
-          <Icon name={showPassword ? 'eye-slash' : 'eye'} size={20} color="#007bff" />
-        </TouchableOpacity>
-      </View>
-      {errors.password && <Text style={styles.error}>{errors.password}</Text>}
+            {/* Email */}
+            <View style={styles.inputContainer}>
+              <Icon name="envelope" size={18} color="#666" style={styles.inputIcon} />
+              <TextInput
+                placeholder="Email"
+                value={email}
+                onChangeText={handleEmailChange}
+                style={styles.input}
+                autoCapitalize="none"
+                keyboardType="email-address"
+                placeholderTextColor="#999"
+              />
+            </View>
+            {errors.email && <Text style={styles.error}>{errors.email}</Text>}
 
-      <View style={styles.passwordContainer}>
-        <TextInput
-          placeholder="Confirm Password"
-          value={confirmPassword}
-          onChangeText={setConfirmPassword}
-          secureTextEntry={!showConfirmPassword}
-          style={[styles.input, { flex: 1 }]}
-        />
-        <TouchableOpacity onPress={() => setShowConfirmPassword(!showConfirmPassword)} style={styles.passwordToggle}>
-          <Icon name={showConfirmPassword ? 'eye-slash' : 'eye'} size={20} color="#007bff" />
-        </TouchableOpacity>
-      </View>
-      {errors.confirmPassword && <Text style={styles.error}>{errors.confirmPassword}</Text>}
+            {/* Password */}
+            <View style={styles.inputContainer}>
+              <Icon name="lock" size={18} color="#666" style={styles.inputIcon} />
+              <TextInput
+                placeholder="Password"
+                value={password}
+                onChangeText={handlePasswordChange}
+                secureTextEntry={!showPassword}
+                style={styles.input}
+                placeholderTextColor="#999"
+              />
+              <TouchableOpacity
+                onPress={togglePasswordVisibility}
+                style={styles.eyeIcon}
+              >
+                <Icon name={showPassword ? 'eye-slash' : 'eye'} size={20} color="#666" />
+              </TouchableOpacity>
+            </View>
+            {errors.password && <Text style={styles.error}>{errors.password}</Text>}
 
-      <TouchableOpacity style={styles.button} onPress={handleRegister}>
-        <Text style={styles.buttonText}>Register</Text>
-      </TouchableOpacity>
+            {/* Confirm Password */}
+            <View style={styles.inputContainer}>
+              <Icon name="lock" size={18} color="#666" style={styles.inputIcon} />
+              <TextInput
+                placeholder="Confirm Password"
+                value={confirmPassword}
+                onChangeText={handleConfirmPasswordChange}
+                secureTextEntry={!showConfirmPassword}
+                style={styles.input}
+                placeholderTextColor="#999"
+              />
+              <TouchableOpacity
+                onPress={toggleConfirmPasswordVisibility}
+                style={styles.eyeIcon}
+              >
+                <Icon name={showConfirmPassword ? 'eye-slash' : 'eye'} size={20} color="#666" />
+              </TouchableOpacity>
+            </View>
+            {errors.confirmPassword && <Text style={styles.error}>{errors.confirmPassword}</Text>}
 
-      <View style={styles.switchTextContainer}>
-        <Text style={styles.switchText}>Already have an account? </Text>
-        <TouchableOpacity onPress={() => navigation.navigate('Login')}>
-          <Text style={[styles.switchText, styles.loginLink]}>Login</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
+            <TouchableOpacity 
+              style={styles.registerButton} 
+              onPress={handleRegister}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.registerButtonText}>REGISTER</Text>
+            </TouchableOpacity>
+          </View>
+
+          <View style={styles.loginContainer}>
+            <Text style={styles.loginText}>Already have an account? </Text>
+            <TouchableOpacity onPress={() => navigation.navigate('Login')}>
+              <Text style={styles.loginLink}>Login</Text>
+            </TouchableOpacity>
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20, justifyContent: 'center' },
-  title: { fontSize: 24, fontWeight: 'bold', textAlign: 'center', marginBottom: 20 },
-  input: { 
-    borderWidth: 1, 
-    borderColor: '#ccc', 
-    borderRadius: 6, 
-    padding: 10, 
-    marginTop: 10 
-  },
-  passwordContainer: { 
-    flexDirection: 'row', 
-    alignItems: 'center', 
-    marginTop: 10, 
-    position: 'relative' 
-  },
-  passwordToggle: {
-    position: 'absolute',
-    right: 10,
-    top: '55%',
-    transform: [{ translateY: -10 }]
-  },
-  button: { 
-    backgroundColor: '#007bff', 
-    padding: 12, 
-    borderRadius: 6, 
-    marginTop: 20 
-  },
-  buttonText: { 
-    color: '#fff', 
-    textAlign: 'center', 
-    fontWeight: 'bold' 
-  },
-  switchTextContainer: { 
-    flexDirection: 'row', 
-    justifyContent: 'center', 
-    marginTop: 15 
-  },
-  switchText: { 
-    color: '#000', 
-    fontWeight: 'bold' 
-  },
-  loginLink: {
-    color: '#007bff', 
-    textDecorationLine: 'underline'
-  },
-  error: { 
-    color: 'red', 
-    fontSize: 12, 
-    marginTop: 4 
-  }
-});
