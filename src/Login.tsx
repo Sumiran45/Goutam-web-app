@@ -12,7 +12,7 @@ import {
   Dimensions,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
-import styles from '../src/styles/Login.styles'; 
+import styles from '../src/styles/Login.styles';
 import { validateLogin } from '../src/controller/Login.controller';
 
 const { width, height } = Dimensions.get('window');
@@ -23,13 +23,8 @@ export default function LoginScreen({ navigation }: any) {
   const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
 
-  const handleLogin = () => {
-    const { isValid, newErrors } = validateLogin(email, password);
-    if (isValid) {
-      navigation.replace('Home');
-    } else {
-      setErrors(newErrors);
-    }
+  const handleLogin = async () => {
+    await validateLogin(email, password, setErrors, navigation);
   };
 
   return (
@@ -54,16 +49,15 @@ export default function LoginScreen({ navigation }: any) {
           <View style={styles.formContainer}>
             <Text style={styles.title}>Log In</Text>
 
-            {/* Email Input */}
+            {/* Email or Username Input */}
             <View style={styles.inputContainer}>
-              <Icon name="envelope" size={18} color="#666" style={styles.inputIcon} />
+              <Icon name="user" size={18} color="#666" style={styles.inputIcon} />
               <TextInput
-                placeholder="Email"
+                placeholder="Email or Username"
                 value={email}
                 onChangeText={setEmail}
                 style={styles.input}
                 autoCapitalize="none"
-                keyboardType="email-address"
                 placeholderTextColor="#999"
               />
             </View>
@@ -89,12 +83,10 @@ export default function LoginScreen({ navigation }: any) {
             </View>
             {errors.password && <Text style={styles.error}>{errors.password}</Text>}
 
-            {/* Forgot Password */}
             <TouchableOpacity style={styles.forgotPasswordButton}>
               <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
             </TouchableOpacity>
 
-            {/* Login Button */}
             <TouchableOpacity
               style={styles.loginButton}
               onPress={handleLogin}
