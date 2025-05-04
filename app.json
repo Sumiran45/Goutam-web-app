@@ -16,9 +16,14 @@
     "android": {
       "adaptiveIcon": {
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.sumi45.Goutamwebapp"
     },
-    "web": {
+    "web": {},
+    "extra": {
+      "eas": {
+        "projectId": "b49a53a4-2916-49e4-9f58-466013d5da3d"
+      }
     }
   }
 }

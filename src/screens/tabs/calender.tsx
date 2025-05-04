@@ -1,4 +1,3 @@
-// screens/CalendarScreen.tsx
 import React, { useState } from 'react';
 import { View, Text, ScrollView, Image, SafeAreaView, StatusBar } from 'react-native';
 import { Calendar } from 'react-native-calendars';
@@ -46,7 +45,6 @@ export const CalendarScreen = () => {
         }}
         onDayPress={(day:any) => setSelectedDate(day.dateString)}
         onMonthChange={(month:any) => {
-          // Convert month number to month name
           const monthNames = ['JANUARY', 'FEBRUARY', 'MARCH', 'APRIL', 'MAY', 'JUNE', 
                              'JULY', 'AUGUST', 'SEPTEMBER', 'OCTOBER', 'NOVEMBER', 'DECEMBER'];
           setCurrentMonth(monthNames[month.month - 1]);

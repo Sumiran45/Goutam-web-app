@@ -6,9 +6,9 @@ import { CartProvider } from './src/Context/CartContext';
 import LoginScreen from './src/Login';
 import RegisterScreen from './src/Register';
 import HomeScreen from './src/screens/Home';
-import ShopScreen from './src/screens/tabs/Shop';
-import ProductDetail from './src/screens/Shop/ProductDetails';
-import CartScreen from './src/screens/Shop/CartScreen';
+import ShopScreen from './src/screens/tabs/shop';
+import ProductDetail from './src/screens/tabs/shop/ProductDetails';
+import CartScreen from './src/screens/tabs/shop/CartScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -23,7 +23,6 @@ export default function App() {
           <Stack.Screen name="Shop" component={ShopScreen} />
           <Stack.Screen name="ProductDetail" component={ProductDetail} />
           <Stack.Screen name="Cart" component={CartScreen} />
-
         </Stack.Navigator>
       </CartProvider>
     </NavigationContainer>
