@@ -11,8 +11,8 @@ const Tab = createBottomTabNavigator();
 const AppNavigator = () => {
   return (
     <Tab.Navigator
-      screenOptions={({ route }:any) => ({
-        tabBarIcon: ({ focused }:any) => {
+      screenOptions={({ route }) => ({
+        tabBarIcon: ({ focused }) => {
           let iconName;
 
           if (route.name === 'Calendar') {
@@ -29,7 +29,7 @@ const AppNavigator = () => {
         },
         tabBarActiveTintColor: '#3498db',
         tabBarInactiveTintColor: '#555',
-        headerShown: false,
+        headerShown: false, 
         tabBarStyle: {
           borderTopWidth: 1,
           borderTopColor: '#e0e0e0',
@@ -45,10 +45,26 @@ const AppNavigator = () => {
         }
       })}
     >
-      <Tab.Screen name="Calendar" component={CalendarScreen} />
-      <Tab.Screen name = "Shop" component={ShopScreen}/>
-      <Tab.Screen name="Notes" component={NotesScreen} />
-      <Tab.Screen name="Settings" component={SettingsScreen} />
+      <Tab.Screen 
+        name="Calendar" 
+        component={CalendarScreen} 
+        options={{ headerShown: false }} 
+      />
+      <Tab.Screen 
+        name="Shop" 
+        component={ShopScreen} 
+        options={{ headerShown: false }} 
+      />
+      <Tab.Screen 
+        name="Notes" 
+        component={NotesScreen} 
+        options={{ headerShown: false }} 
+      />
+      <Tab.Screen 
+        name="Settings" 
+        component={SettingsScreen} 
+        options={{ headerShown: false }} 
+      />
     </Tab.Navigator>
   );
 };

@@ -27,8 +27,8 @@ export const validateLogin = async (
 
   const isEmail = /\S+@\S+\.\S+/.test(identifier);
   const payload = isEmail
-    ? { email: identifier, password }
-    : { username: identifier, password };
+    ? { email_or_username: identifier, password }
+    : { email_or_username: identifier, password };
 
   try {
     const response = await api.post('/login', payload);

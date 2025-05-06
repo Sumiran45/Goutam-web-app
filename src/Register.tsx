@@ -1,7 +1,7 @@
 import React from 'react';
 import {
   View, Text, TextInput, TouchableOpacity, Image,
-  KeyboardAvoidingView, Platform, ScrollView, SafeAreaView
+  KeyboardAvoidingView, Platform, ScrollView, StatusBar
 } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { useRegister } from './controller/Register.controller';
@@ -18,9 +18,17 @@ export default function RegisterScreen({ navigation }: any) {
     handleRegister,
   } = useRegister(navigation);
 
+  // Add this in your component to ensure the navigation header is hidden
+  React.useEffect(() => {
+    navigation.setOptions({
+      headerShown: false,
+    });
+  }, [navigation]);
+
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.container}>
+    <View style={styles.container}>
+      <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
+      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }}>
         <ScrollView contentContainerStyle={styles.scrollContainer} showsVerticalScrollIndicator={false}>
           <View style={styles.logoContainer}>
             <Image source={require('../assets/images/bear.png')} style={styles.logo} resizeMode="contain" />
@@ -106,6 +114,6 @@ export default function RegisterScreen({ navigation }: any) {
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
-    </SafeAreaView>
+    </View>
   );
 }
