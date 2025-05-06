@@ -1,12 +1,24 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { createStackNavigator } from '@react-navigation/stack';
 import { Text } from 'react-native';
 import { CalendarScreen } from '../screens/tabs/calender';
-import { NotesScreen } from './tabs/notes';
+import { ArticlesScreen } from './tabs/articles';
+import { ArticleDetailScreen } from './tabs/ArticleDetailScreen';
 import { SettingsScreen } from '../screens/tabs/settings';
-import {ShopScreen} from '../screens/tabs/shop';
+import { ShopScreen } from '../screens/tabs/shop';
 
 const Tab = createBottomTabNavigator();
+const ArticlesStack = createStackNavigator();
+
+const ArticlesNavigator = () => {
+  return (
+    <ArticlesStack.Navigator screenOptions={{ headerShown: false }}>
+      <ArticlesStack.Screen name="ArticlesList" component={ArticlesScreen} />
+      <ArticlesStack.Screen name="ArticleDetail" component={ArticleDetailScreen} />
+    </ArticlesStack.Navigator>
+  );
+};
 
 const AppNavigator = () => {
   return (
@@ -19,8 +31,8 @@ const AppNavigator = () => {
             iconName = '📅';
           } else if (route.name === 'Shop') {
             iconName = '🛒';
-          } else if (route.name === 'Notes') {
-            iconName = '📝';
+          } else if (route.name === 'Articles') {
+            iconName = '📰';
           } else if (route.name === 'Settings') {
             iconName = '⚙️';
           }
@@ -56,8 +68,8 @@ const AppNavigator = () => {
         options={{ headerShown: false }} 
       />
       <Tab.Screen 
-        name="Notes" 
-        component={NotesScreen} 
+        name="Articles" 
+        component={ArticlesNavigator} 
         options={{ headerShown: false }} 
       />
       <Tab.Screen 

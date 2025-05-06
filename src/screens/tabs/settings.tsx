@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { styles } from '../../styles/Settings.styles';
 import { View, Text, SafeAreaView, Switch, TouchableOpacity, ScrollView, StyleSheet } from 'react-native';
 
-export const SettingsScreen = () => {
+export const SettingsScreen = ({ navigation }: any) => {
   const [notifications, setNotifications] = useState(true);
   const [periodReminders, setPeriodReminders] = useState(true);
   const [ovulationAlerts, setOvulationAlerts] = useState(true);
@@ -100,7 +100,9 @@ export const SettingsScreen = () => {
             <Text style={styles.accountButtonText}>Privacy Settings</Text>
           </TouchableOpacity>
           
-          <TouchableOpacity style={[styles.accountButton, styles.logoutButton]}>
+          <TouchableOpacity style={[styles.accountButton, styles.logoutButton]}
+          onPress={() => navigation.navigate('Login')}
+          >
             <Text style={styles.logoutButtonText}>Log Out</Text>
           </TouchableOpacity>
         </View>
