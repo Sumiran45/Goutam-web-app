@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity, Image,
   KeyboardAvoidingView, Platform, ScrollView, StatusBar
@@ -8,6 +8,7 @@ import { useRegister } from './controller/Register.controller';
 import { styles } from './styles/Register.style';
 
 export default function RegisterScreen({ navigation }: any) {
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const {
     username, email, password, confirmPassword,
     showPassword, showConfirmPassword,
@@ -16,9 +17,8 @@ export default function RegisterScreen({ navigation }: any) {
     handlePasswordChange, handleConfirmPasswordChange,
     togglePasswordVisibility, toggleConfirmPasswordVisibility,
     handleRegister,
-  } = useRegister(navigation);
+  } = useRegister(navigation, setIsLoading);
 
-  // Add this in your component to ensure the navigation header is hidden
   React.useEffect(() => {
     navigation.setOptions({
       headerShown: false,
@@ -101,8 +101,14 @@ export default function RegisterScreen({ navigation }: any) {
             </View>
             {errors.confirmPassword && <Text style={styles.error}>{errors.confirmPassword}</Text>}
 
-            <TouchableOpacity style={styles.registerButton} onPress={handleRegister} activeOpacity={0.8}>
-              <Text style={styles.registerButtonText}>REGISTER</Text>
+            <TouchableOpacity style={[styles.registerButton]}
+              onPress={() => {
+                if (!isLoading) {
+                  setIsLoading(true);
+                  handleRegister();
+                }
+              }} activeOpacity={0.8} disabled={isLoading}>
+              <Text style={styles.registerButtonText}>{isLoading ? 'REGISTERING...' : 'REGISTER'}</Text>
             </TouchableOpacity>
           </View>
 

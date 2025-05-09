@@ -6,7 +6,7 @@ import { CartProvider } from './src/Context/CartContext';
 import LoginScreen from './src/Login';
 import RegisterScreen from './src/Register';
 import HomeScreen from './src/screens/Home';
-import ShopScreen from './src/screens/tabs/Shop';
+import ShopScreen from './src/screens/tabs/shop';
 import ProductDetail from './src/screens/tabs/shop/ProductDetails';
 import CartScreen from './src/screens/tabs/shop/CartScreen';
 import ForgotPasswordScreen from './src/screens/Forgot_Password/ForgotPasswordScreen';
@@ -25,8 +25,8 @@ export default function App() {
           <Stack.Screen name="Shop" component={ShopScreen}  options={{ headerShown: false }} />
           <Stack.Screen name="ProductDetail" component={ProductDetail}  options={{ headerShown: false }}  />
           <Stack.Screen name="Cart" component={CartScreen}  options={{ headerShown: false }}  />
-          <Stack.Screen name='ForgotPassword' component={ForgotPasswordScreen}/>
-          <Stack.Screen name='ResetPassword' component={ResetPasswordScreen} />
+          <Stack.Screen name='ForgotPassword' component={ForgotPasswordScreen} options={{ headerShown: false }}/>
+          <Stack.Screen name='ResetPassword' component={ResetPasswordScreen} options={{ headerShown: false }}/>
         </Stack.Navigator>
       </CartProvider>
     </NavigationContainer>

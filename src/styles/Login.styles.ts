@@ -12,6 +12,7 @@ const styles = StyleSheet.create({
   },
   scrollContainer: {
     flexGrow: 1,
+    justifyContent: 'center',
     paddingHorizontal: width * 0.06,
     paddingVertical: height * 0.02,
   },
@@ -33,6 +34,8 @@ const styles = StyleSheet.create({
   formContainer: {
     width: '100%',
     paddingHorizontal: width * 0.02,
+    alignSelf: 'center',
+    maxWidth: 400,
   },
   title: {
     fontSize: 24,
@@ -113,6 +116,22 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: '#FF6B6B',
     fontWeight: 'bold',
+  },
+  backButtonContainer: {
+    position: 'absolute',
+    top: Platform.OS === 'ios' ? 50 : 20,
+    left: 20,
+    zIndex: 10,
+  },
+  backButton: {
+    padding: 8,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.2,
+    shadowRadius: 1.5,
+    elevation: 2,
   },
 });
 

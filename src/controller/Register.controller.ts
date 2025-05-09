@@ -2,7 +2,7 @@ import { useState } from 'react';
 import api from '../Api/api';
 import { Alert } from 'react-native';
 
-export const useRegister = (navigation: any) => {
+export const useRegister = (navigation: any,setIsLoading:any) => {
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -33,6 +33,7 @@ export const useRegister = (navigation: any) => {
   };
 
   const handleRegister = async () => {
+    setIsLoading(true);
     if (!validate()) return;
 
     try {
@@ -49,6 +50,8 @@ export const useRegister = (navigation: any) => {
     } catch (err: any) {
       const message = err.response?.data?.detail || 'Registration failed';
       Alert.alert('Error', message);
+    } finally {
+      setIsLoading(false)
     }
   };
 

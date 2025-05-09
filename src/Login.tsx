@@ -22,9 +22,17 @@ export default function LoginScreen({ navigation }: any) {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const handleLogin = async () => {
-    await validateLogin(email, password, setErrors, navigation);
+    setIsLoading(true);
+    try {
+      await validateLogin(email, password, setErrors, navigation);
+    } catch (error) {
+      console.error("login failed",error)
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   React.useEffect(() => {
@@ -95,11 +103,15 @@ export default function LoginScreen({ navigation }: any) {
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={styles.loginButton}
+              style={[
+                styles.loginButton,
+                isLoading && { opacity: 0.7 }
+              ]}
               onPress={handleLogin}
               activeOpacity={0.8}
+              disabled={isLoading}
             >
-              <Text style={styles.loginButtonText}>LOGIN</Text>
+              <Text style={styles.loginButtonText}> {isLoading ? 'LOGGING IN...' : 'LOGIN'}</Text>
             </TouchableOpacity>
           </View>
 
