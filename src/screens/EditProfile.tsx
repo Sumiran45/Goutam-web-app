@@ -1,0 +1,227 @@
+import React, { useState, useEffect } from 'react';
+import {
+  View,
+  Text,
+  SafeAreaView,
+  TouchableOpacity,
+  Image,
+  TextInput,
+  Alert,
+  ActivityIndicator,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView
+} from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import * as ImagePicker from 'expo-image-picker';
+import { Ionicons } from '@expo/vector-icons';
+import { styles } from '../styles/editProfile.styles';
+
+interface User {
+  _id: string | null;
+  name: string | null;
+  email: string | null;
+  username: string | null;
+  profilePicture?: string | null;
+}
+
+export const EditProfileScreen: React.FC = () => {
+  const navigation = useNavigation();
+  const [user, setUser] = useState<User | null>(null);
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
+  const [image, setImage] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [uploading, setUploading] = useState(false);
+
+  useEffect(() => {
+    loadMockData();
+  }, []);
+
+  const loadMockData = () => {
+    setLoading(true);
+    
+    setTimeout(() => {
+      const mockUser = {
+        _id: 'user123',
+        name: 'John Doe',
+        email: 'john.doe@example.com',
+        username: 'johndoe',
+        profilePicture: null
+      };
+      
+      setUser(mockUser);
+      setName(mockUser.name);
+      setEmail(mockUser.email);
+      setUsername(mockUser.username);
+      setLoading(false);
+    }, 1000);
+  };
+
+  const pickImage = async () => {
+    const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+    if (permissionResult.granted === false) {
+      Alert.alert('Permission Required', 'You need to allow access to your photos to change profile picture');
+      return;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.7,
+    });
+
+    if (!result.canceled && result.assets && result.assets[0].uri) {
+      simulateImageUpload(result.assets[0].uri);
+    }
+  };
+
+  const simulateImageUpload = (imageUri: string) => {
+    setUploading(true);
+    
+    // Simulate upload delay
+    setTimeout(() => {
+      setImage(imageUri);
+      setUploading(false);
+      Alert.alert('Success', 'Profile picture updated successfully');
+    }, 1500);
+  };
+
+  const updateProfile = () => {
+    setLoading(true);
+    
+    setTimeout(() => {
+      const updatedUser = {
+        _id: user?._id || 'user123',
+        name,
+        email,
+        username,
+        profilePicture: image
+      } ;
+      
+      setUser(updatedUser);
+      setLoading(false);
+      Alert.alert('Success', 'Profile updated successfully');
+    }, 1000);
+  };
+
+  const navigateToChangePassword = () => {
+    navigation.navigate('ChangePassword' as never);
+  };
+
+  if (loading && !user) {
+    return (
+      <SafeAreaView style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#3498db" />
+      </SafeAreaView>
+    );
+  }
+
+  return (
+    <SafeAreaView style={styles.container}>
+      <View style={styles.header}>
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => navigation.goBack()}
+        >
+          <Ionicons name="arrow-back" size={24} color="#ffffff" />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>Edit Profile</Text>
+        <View style={styles.placeholderView} />
+      </View>
+
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={styles.keyboardView}
+      >
+        <ScrollView 
+          contentContainerStyle={styles.scrollContainer}
+          showsVerticalScrollIndicator={false}
+        >
+          <View style={styles.profileImageContainer}>
+            {uploading ? (
+              <View style={styles.imageContainer}>
+                <ActivityIndicator size="large" color="#3498db" />
+              </View>
+            ) : (
+              <TouchableOpacity onPress={pickImage} style={styles.imageContainer}>
+                {image ? (
+                  <Image source={{ uri: image }} style={styles.profileImage} />
+                ) : (
+                  <View style={styles.placeholderImage}>
+                    <Ionicons name="person" size={60} color="#ccc" />
+                  </View>
+                )}
+                <View style={styles.editIconContainer}>
+                  <Ionicons name="camera" size={20} color="#fff" />
+                </View>
+              </TouchableOpacity>
+            )}
+          </View>
+
+          <View style={styles.formContainer}>
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>Full Name</Text>
+              <TextInput
+                style={styles.input}
+                value={name}
+                onChangeText={setName}
+                placeholder="Enter your full name"
+                placeholderTextColor="#999"
+              />
+            </View>
+
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>Username</Text>
+              <TextInput
+                style={styles.input}
+                value={username}
+                onChangeText={setUsername}
+                placeholder="Enter your username"
+                placeholderTextColor="#999"
+              />
+            </View>
+
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>Email Address</Text>
+              <TextInput
+                style={styles.input}
+                value={email}
+                onChangeText={setEmail}
+                placeholder="Enter your email"
+                placeholderTextColor="#999"
+                keyboardType="email-address"
+                autoCapitalize="none"
+              />
+            </View>
+
+            <TouchableOpacity 
+              style={styles.passwordButton}
+              onPress={navigateToChangePassword}
+            >
+              <Text style={styles.passwordButtonText}>Change Password</Text>
+              <Ionicons name="chevron-forward" size={20} color="#3498db" />
+            </TouchableOpacity>
+          </View>
+
+          <TouchableOpacity 
+            style={styles.saveButton}
+            onPress={updateProfile}
+            disabled={loading}
+          >
+            {loading ? (
+              <ActivityIndicator size="small" color="#fff" />
+            ) : (
+              <Text style={styles.saveButtonText}>Save Changes</Text>
+            )}
+          </TouchableOpacity>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
+  );
+};
+
+export default EditProfileScreen;

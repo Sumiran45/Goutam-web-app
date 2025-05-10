@@ -34,7 +34,6 @@ const CartScreen: React.FC = () => {
     if (cart.length === 0) return;
     
     setProcessing(true);
-    // Simulate API call
     setTimeout(() => {
       setProcessing(false);
       Alert.alert(
@@ -49,7 +48,6 @@ const CartScreen: React.FC = () => {
     removeFromCart(productId);
   };
 
-  // Empty cart view
   if (cart.length === 0) {
     return (
       <SafeAreaView style={styles.container}>
@@ -58,7 +56,7 @@ const CartScreen: React.FC = () => {
             style={styles.backButton}
             onPress={() => navigation.goBack()}
           >
-            <Icon name="arrow-back" size={24} color="#333" />
+            <Icon name="arrow-back" size={24} color="#fff" />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Your Cart</Text>
           <View style={styles.placeholder} />
@@ -96,7 +94,7 @@ const CartScreen: React.FC = () => {
         style={styles.removeButton}
         onPress={() => handleRemoveItem(item.id)}
       >
-        <Icon name="delete-outline" size={24} color="#ec407a" />
+        <Icon name="delete-outline" size={24} color="#3498db" />
       </TouchableOpacity>
     </View>
   );
@@ -177,16 +175,16 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: '#f8f8f8',
+    backgroundColor: '#3498db',
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
+    borderBottomColor: '#3498db',
   },
   headerTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#333',
+    color: '#fff',
   },
   backButton: {
     padding: 8,
@@ -214,7 +212,7 @@ const styles = StyleSheet.create({
     marginBottom: 32,
   },
   shopButton: {
-    backgroundColor: '#ec407a',
+    backgroundColor: '#3498db',
     paddingHorizontal: 24,
     paddingVertical: 12,
     borderRadius: 8,
@@ -259,7 +257,7 @@ const styles = StyleSheet.create({
   },
   productPrice: {
     fontSize: 16,
-    color: '#ec407a',
+    color: '#3498db',
     fontWeight: '700',
   },
   removeButton: {
@@ -311,10 +309,10 @@ const styles = StyleSheet.create({
   totalValue: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#ec407a',
+    color: '#3498db',
   },
   checkoutButton: {
-    backgroundColor: '#ec407a',
+    backgroundColor: '#3498db',
     padding: 16,
     borderRadius: 8,
     alignItems: 'center',

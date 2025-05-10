@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { styles } from '../../styles/Settings.styles';
-import { View, Text, SafeAreaView, Switch, TouchableOpacity, ScrollView, StyleSheet } from 'react-native';
+import { View, Text, SafeAreaView, Switch, TouchableOpacity, ScrollView } from 'react-native';
 
 export const SettingsScreen = ({ navigation }: any) => {
   const [notifications, setNotifications] = useState(true);
@@ -8,6 +8,10 @@ export const SettingsScreen = ({ navigation }: any) => {
   const [ovulationAlerts, setOvulationAlerts] = useState(true);
   const [symptomTracking, setSymptomTracking] = useState(true);
   const [darkMode, setDarkMode] = useState(false);
+
+  const navigateToEditProfile = () => {
+    navigation.navigate('EditProfile' as never);
+  };
   
   return (
     <SafeAreaView style={styles.container}>
@@ -91,8 +95,11 @@ export const SettingsScreen = ({ navigation }: any) => {
         
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Account</Text>
-          
-          <TouchableOpacity style={styles.accountButton}>
+
+           <TouchableOpacity 
+            style={styles.accountButton}
+            onPress={navigateToEditProfile}
+          >
             <Text style={styles.accountButtonText}>Edit Profile</Text>
           </TouchableOpacity>
           

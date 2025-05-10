@@ -92,7 +92,7 @@ export const styles = StyleSheet.create({
             fontWeight: '700',
         },
         button: {
-            backgroundColor: '#ec407a',
+            backgroundColor: '#3498db',
             padding: 8,
             borderRadius: 6,
             alignItems: 'center'

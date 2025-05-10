@@ -85,12 +85,12 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   loginButton: {
-    backgroundColor: '#FF6B6B',
+    backgroundColor: '#3498db',
     borderRadius: 10,
     padding: 15,
     marginTop: height * 0.025,
     alignItems: 'center',
-    shadowColor: '#FF6B6B',
+    shadowColor: '#3498db',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.3,
     shadowRadius: 3,
@@ -114,7 +114,7 @@ const styles = StyleSheet.create({
   },
   registerLink: {
     fontSize: 15,
-    color: '#FF6B6B',
+    color: '#3498db',
     fontWeight: 'bold',
   },
   backButtonContainer: {

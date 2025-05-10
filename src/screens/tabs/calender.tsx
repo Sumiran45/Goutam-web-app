@@ -6,7 +6,7 @@ import { styles } from '../../styles/Home.styles';
 
 export const CalendarScreen = () => {
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
-  const [currentMonth, setCurrentMonth] = useState('DECEMBER'); // Default value, would be dynamically updated
+  const [currentMonth, setCurrentMonth] = useState('MAY');
 
   return (
     <SafeAreaView style={styles.container}>
@@ -22,12 +22,12 @@ export const CalendarScreen = () => {
         theme={{
           calendarBackground: '#ffffff',
           textSectionTitleColor: '#b6c1cd',
-          selectedDayBackgroundColor: '#ff6b6b',
+          selectedDayBackgroundColor: '#3498db',
           selectedDayTextColor: '#ffffff',
           todayTextColor: '#3498db',
           dayTextColor: '#2d4150',
           textDisabledColor: '#d9e1e8',
-          dotColor: '#ff6b6b',
+          dotColor: '#3498db',
           selectedDotColor: '#ffffff',
           arrowColor: '#3498db',
           monthTextColor: '#3498db',

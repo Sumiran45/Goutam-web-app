@@ -16,7 +16,7 @@ export const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   addButton: {
-    backgroundColor: '#ff6b6b',
+    backgroundColor: '#3498db',
     borderRadius: 8,
     padding: 12,
     alignItems: 'center',
@@ -64,7 +64,7 @@ export const styles = StyleSheet.create({
     backgroundColor: '#95a5a6',
   },
   publishButton: {
-    backgroundColor: '#ff6b6b',
+    backgroundColor: '#3498db',
   },
   actionButtonText: {
     color: '#ffffff',
@@ -109,7 +109,7 @@ export const styles = StyleSheet.create({
   },
   readMore: {
     fontSize: 14,
-    color: '#ff6b6b',
+    color: '#3498db',
     fontWeight: '600',
     alignSelf: 'flex-end',
   },

@@ -9,12 +9,12 @@ type MarkedDatesType = {
   };
   
   export const periodDays: MarkedDatesType = {
-    '2025-04-10': { selected: true, marked: true, selectedColor: '#ff6b6b' },
-    '2025-04-11': { selected: true, marked: true, selectedColor: '#ff6b6b' },
-    '2025-04-12': { selected: true, marked: true, selectedColor: '#ff6b6b' },
-    '2025-04-13': { selected: true, marked: true, selectedColor: '#ff6b6b' },
-    '2025-04-14': { selected: true, marked: true, selectedColor: '#ff6b6b' },
-    '2025-04-15': { selected: true, marked: true, selectedColor: '#ff6b6b' },
+    '2025-04-10': { selected: true, marked: true, selectedColor: '#3498db' },
+    '2025-04-11': { selected: true, marked: true, selectedColor: '#3498db' },
+    '2025-04-12': { selected: true, marked: true, selectedColor: '#3498db' },
+    '2025-04-13': { selected: true, marked: true, selectedColor: '#3498db' },
+    '2025-04-14': { selected: true, marked: true, selectedColor: '#3498db' },
+    '2025-04-15': { selected: true, marked: true, selectedColor: '#3498db' },
     '2025-04-29': { marked: true, dotColor: '#50cebb', activeOpacity: 0, selectedColor: '#50cebb' },
   };
   

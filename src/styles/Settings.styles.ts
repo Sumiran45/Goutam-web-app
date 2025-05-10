@@ -65,11 +65,11 @@ export const styles = StyleSheet.create({
       textAlign: 'center',
     },
     logoutButton: {
-      backgroundColor: '#ffe0e0',
+      backgroundColor: '#d6eaff',
       marginTop: 10,
     },
     logoutButtonText: {
-      color: '#ff6b6b',
+      color: '#3498db',
       fontSize: 16,
       fontWeight: 'bold',
       textAlign: 'center',

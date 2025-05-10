@@ -190,7 +190,7 @@ const styles = StyleSheet.create({
   },
   category: {
     fontSize: 14,
-    color: '#ec407a',
+    color: '#3498db',
     fontWeight: '500',
     marginBottom: 6,
   },
@@ -203,7 +203,7 @@ const styles = StyleSheet.create({
   price: {
     fontSize: 22,
     fontWeight: 'bold',
-    color: '#ec407a',
+    color: '#3498db',
     marginBottom: 12,
   },
   divider: {
@@ -274,7 +274,7 @@ const styles = StyleSheet.create({
   },
   addToCartButton: {
     flexDirection: 'row',
-    backgroundColor: '#ec407a',
+    backgroundColor: '#3498db',
     paddingHorizontal: 24,
     paddingVertical: 12,
     borderRadius: 8,
