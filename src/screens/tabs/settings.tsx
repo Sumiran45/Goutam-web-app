@@ -10,7 +10,7 @@ export const SettingsScreen = ({ navigation }: any) => {
   const [darkMode, setDarkMode] = useState(false);
 
   const navigateToEditProfile = () => {
-    navigation.navigate('EditProfile' as never);
+    navigation.navigate('EditProfile');
   };
   
   return (

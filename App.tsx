@@ -6,7 +6,7 @@ import { CartProvider } from './src/Context/CartContext';
 import LoginScreen from './src/Login';
 import RegisterScreen from './src/Register';
 import HomeScreen from './src/screens/Home';
-import ShopScreen from './src/screens/tabs/shop';
+import ShopScreen from './src/screens/tabs/Shop';
 import ProductDetail from './src/screens/tabs/shop/ProductDetails';
 import CartScreen from './src/screens/tabs/shop/CartScreen';
 import ForgotPasswordScreen from './src/screens/Forgot_Password/ForgotPasswordScreen';
@@ -14,8 +14,9 @@ import ResetPasswordScreen from './src/screens/Forgot_Password/ResetPasswordScre
 import EditProfileScreen from './src/screens/EditProfile';
 import ChangePasswordScreen from './src/screens/Forgot_Password/ChangePassword';
 import AdminScreen from './src/AdminScreen';
+import { RootStackParamList } from './src/controller/RootStackParamList';
 
-const Stack = createNativeStackNavigator();
+const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export default function App() {
   return (
@@ -32,8 +33,8 @@ export default function App() {
           <Stack.Screen name='ResetPassword' component={ResetPasswordScreen} options={{ headerShown: false }}/>
           <Stack.Screen name="EditProfile" component={EditProfileScreen} options={{ headerShown: false }}/>
           <Stack.Screen name="ChangePassword" component={ChangePasswordScreen} options={{ headerShown: false }}/>
-          <Stack.Screen name='ForgotPassword' component={ForgotPasswordScreen}/>
-          <Stack.Screen name='ResetPassword' component={ResetPasswordScreen} />
+          {/* <Stack.Screen name='ForgotPassword' component={ForgotPasswordScreen}/> */}
+          {/* <Stack.Screen name='ResetPassword' component={ResetPasswordScreen} /> */}
           <Stack.Screen name='AdminScreen' component={AdminScreen}/>
         </Stack.Navigator>
       </CartProvider>

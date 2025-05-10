@@ -1,5 +1,6 @@
 import { jwtDecode } from 'jwt-decode';
 import api from '../Api/api';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 interface MyJwtPayload {
   user_id: string;
   username: string;
@@ -43,6 +44,7 @@ export const validateLogin = async (
 
     if (response.status === 200) {
       const decoded = jwtDecode<MyJwtPayload>(response.data.access_token);
+      await AsyncStorage.setItem('token', response.data.access_token);
       if (decoded.is_admin) {
         navigation.navigate('AdminScreen');
       } else {
