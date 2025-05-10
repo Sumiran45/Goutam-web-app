@@ -11,6 +11,7 @@ import ProductDetail from './src/screens/tabs/shop/ProductDetails';
 import CartScreen from './src/screens/tabs/shop/CartScreen';
 import ForgotPasswordScreen from './src/screens/Forgot_Password/ForgotPasswordScreen';
 import ResetPasswordScreen from './src/screens/Forgot_Password/ResetPasswordScreen';
+import AdminScreen from './src/AdminScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -27,6 +28,7 @@ export default function App() {
           <Stack.Screen name="Cart" component={CartScreen}  options={{ headerShown: false }}  />
           <Stack.Screen name='ForgotPassword' component={ForgotPasswordScreen}/>
           <Stack.Screen name='ResetPassword' component={ResetPasswordScreen} />
+          <Stack.Screen name='AdminScreen' component={AdminScreen}/>
         </Stack.Navigator>
       </CartProvider>
     </NavigationContainer>
