@@ -6,7 +6,7 @@ import { CalendarScreen } from '../screens/tabs/calender';
 import { ArticlesScreen } from './tabs/articles';
 import { ArticleDetailScreen } from './tabs/ArticleDetailScreen';
 import { SettingsScreen } from '../screens/tabs/settings';
-import { ShopScreen } from '../screens/tabs/Shop';
+import { ShopScreen } from './tabs/shops';
 
 const Tab = createBottomTabNavigator();
 const ArticlesStack = createStackNavigator();
