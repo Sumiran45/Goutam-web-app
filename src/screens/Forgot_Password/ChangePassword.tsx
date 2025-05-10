@@ -14,6 +14,7 @@ import {
 import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { styles } from '../../styles/changePassword.styles';
+import { ChangePassword } from '../../controller/ChangePassword.controller';
 
 const ChangePasswordScreen: React.FC = () => {
     const navigation = useNavigation();
@@ -56,21 +57,31 @@ const ChangePasswordScreen: React.FC = () => {
         return true;
     };
 
-    const handleChangePassword = () => {
+    const handleChangePassword = async () => {
         if (!validateForm()) return;
-
-        // Simulate password change
+    
         setLoading(true);
-        
-        // Simulate API call delay
-        setTimeout(() => {
+    
+        try {
+            const result = await ChangePassword(currentPassword, newPassword, confirmPassword);
+    
+            if (result.success) {
+                console.log(result)
+                Alert.alert(
+                    'Success',
+                    result.message,
+                    [{ text: 'OK', onPress: () => navigation.goBack() }]
+                );
+            } else {
+                Alert.alert('Error', result.message);
+            }
+    
+        } catch (error) {
+            console.error("Password change failed:", error);
+            Alert.alert('Error', 'Something went wrong. Please try again later.');
+        } finally {
             setLoading(false);
-            Alert.alert(
-                'Success',
-                'Password changed successfully',
-                [{ text: 'OK', onPress: () => navigation.goBack() }]
-            );
-        }, 1500);
+        }
     };
 
     return (

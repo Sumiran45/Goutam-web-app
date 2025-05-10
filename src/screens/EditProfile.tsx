@@ -16,6 +16,7 @@ import { useNavigation } from '@react-navigation/native';
 import * as ImagePicker from 'expo-image-picker';
 import { Ionicons } from '@expo/vector-icons';
 import { styles } from '../styles/editProfile.styles';
+import { DecodeToken } from '../controller/DecodeToken';
 
 interface User {
   _id: string | null;
@@ -39,7 +40,18 @@ export const EditProfileScreen: React.FC = () => {
   useEffect(() => {
     loadMockData();
   }, []);
+ const [userInfo, setUserInfo] = useState<User | null>(null);
+  useEffect(() => {
+    const fetchUserInfo = async () => {
+      const decoded = await DecodeToken();
+      if (decoded) {
+        setUserInfo(decoded);
+      }
+      console.log(userInfo);
+    };
 
+    fetchUserInfo();
+  }, []);
   const loadMockData = () => {
     setLoading(true);
     
@@ -52,7 +64,7 @@ export const EditProfileScreen: React.FC = () => {
         profilePicture: null
       };
       
-      setUser(mockUser);
+      setUser(user);
       setName(mockUser.name);
       setEmail(mockUser.email);
       setUsername(mockUser.username);

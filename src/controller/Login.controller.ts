@@ -1,5 +1,14 @@
+import { jwtDecode } from 'jwt-decode';
 import api from '../Api/api';
-
+import AsyncStorage from '@react-native-async-storage/async-storage';
+interface MyJwtPayload {
+  user_id: string;
+  username: string;
+  email: string;
+  is_admin: boolean;
+  exp: number;
+  iat: number;
+}
 export const validateLogin = async (
   identifier: string,
   password: string,
@@ -34,7 +43,14 @@ export const validateLogin = async (
     const response = await api.post('/login', payload);
 
     if (response.status === 200) {
-      navigation.replace('Home');
+      const decoded = jwtDecode<MyJwtPayload>(response.data.access_token);
+      await AsyncStorage.setItem('token', response.data.access_token);
+      if (decoded.is_admin) {
+        navigation.navigate('AdminScreen');
+      } else {
+        navigation.navigate('Home');
+      }
+
     }
   } catch (error: any) {
     if (error.response?.status === 401) {
