@@ -12,6 +12,18 @@ export const SettingsScreen = ({ navigation }: any) => {
   const navigateToEditProfile = () => {
     navigation.navigate('EditProfile' as never);
   };
+
+  const navigateToTermsOfService = () => {
+    navigation.navigate('TermsOfService');
+  };
+
+  const navigateToPrivacyPolicy = () => {
+    navigation.navigate('PrivacyPolicy');
+  };
+
+  const navigateToHelpSupport = () => {
+    navigation.navigate('HelpSupport');
+  };
   
   return (
     <SafeAreaView style={styles.container}>
@@ -117,15 +129,15 @@ export const SettingsScreen = ({ navigation }: any) => {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>About</Text>
           
-          <TouchableOpacity style={styles.aboutItem}>
+          <TouchableOpacity style={styles.aboutItem} onPress={navigateToTermsOfService}>
             <Text style={styles.aboutItemText}>Terms of Service</Text>
           </TouchableOpacity>
           
-          <TouchableOpacity style={styles.aboutItem}>
+          <TouchableOpacity style={styles.aboutItem} onPress={navigateToPrivacyPolicy}>
             <Text style={styles.aboutItemText}>Privacy Policy</Text>
           </TouchableOpacity>
           
-          <TouchableOpacity style={styles.aboutItem}>
+          <TouchableOpacity style={styles.aboutItem} onPress={navigateToHelpSupport}>
             <Text style={styles.aboutItemText}>Help & Support</Text>
           </TouchableOpacity>
           

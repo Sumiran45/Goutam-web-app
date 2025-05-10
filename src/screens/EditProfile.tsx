@@ -31,9 +31,10 @@ export const EditProfileScreen: React.FC = () => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [username, setUsername] = useState('');
-  const [image, setImage] = useState<string | null>(null);
+  const [image, setImage] = useState<string | null>('https://marketplace.canva.com/EAF21qlw744/1/0/1600w/canva-blue-modern-facebook-profile-picture-mtu4sNVuKIU.jpg');
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [isEditingImage, setIsEditingImage] = useState(false);
 
   useEffect(() => {
     loadMockData();
@@ -45,9 +46,9 @@ export const EditProfileScreen: React.FC = () => {
     setTimeout(() => {
       const mockUser = {
         _id: 'user123',
-        name: 'John Doe',
-        email: 'john.doe@example.com',
-        username: 'johndoe',
+        name: 'sumiran Jain',
+        email: 'sumiran@gmail.com',
+        username: 'sumiran45',
         profilePicture: null
       };
       
@@ -60,10 +61,12 @@ export const EditProfileScreen: React.FC = () => {
   };
 
   const pickImage = async () => {
+    setIsEditingImage(true);
     const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
 
     if (permissionResult.granted === false) {
       Alert.alert('Permission Required', 'You need to allow access to your photos to change profile picture');
+      setIsEditingImage(false);
       return;
     }
 
@@ -76,16 +79,18 @@ export const EditProfileScreen: React.FC = () => {
 
     if (!result.canceled && result.assets && result.assets[0].uri) {
       simulateImageUpload(result.assets[0].uri);
+    } else {
+      setIsEditingImage(false);
     }
   };
 
   const simulateImageUpload = (imageUri: string) => {
     setUploading(true);
     
-    // Simulate upload delay
     setTimeout(() => {
       setImage(imageUri);
       setUploading(false);
+      setIsEditingImage(false);
       Alert.alert('Success', 'Profile picture updated successfully');
     }, 1500);
   };
@@ -110,6 +115,12 @@ export const EditProfileScreen: React.FC = () => {
 
   const navigateToChangePassword = () => {
     navigation.navigate('ChangePassword' as never);
+  };
+
+  const handleImagePress = () => {
+    if (!uploading) {
+      pickImage();
+    }
   };
 
   if (loading && !user) {
@@ -147,7 +158,7 @@ export const EditProfileScreen: React.FC = () => {
                 <ActivityIndicator size="large" color="#3498db" />
               </View>
             ) : (
-              <TouchableOpacity onPress={pickImage} style={styles.imageContainer}>
+              <TouchableOpacity onPress={handleImagePress} style={styles.imageContainer}>
                 {image ? (
                   <Image source={{ uri: image }} style={styles.profileImage} />
                 ) : (
@@ -155,9 +166,11 @@ export const EditProfileScreen: React.FC = () => {
                     <Ionicons name="person" size={60} color="#ccc" />
                   </View>
                 )}
-                <View style={styles.editIconContainer}>
-                  <Ionicons name="camera" size={20} color="#fff" />
-                </View>
+                {isEditingImage && (
+                  <View style={styles.editIconContainer}>
+                    <Ionicons name="camera" size={20} color="#fff" />
+                  </View>
+                )}
               </TouchableOpacity>
             )}
           </View>

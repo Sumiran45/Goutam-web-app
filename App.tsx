@@ -13,6 +13,9 @@ import ForgotPasswordScreen from './src/screens/Forgot_Password/ForgotPasswordSc
 import ResetPasswordScreen from './src/screens/Forgot_Password/ResetPasswordScreen';
 import EditProfileScreen from './src/screens/EditProfile';
 import ChangePasswordScreen from './src/screens/Forgot_Password/ChangePassword';
+import TermsOfServiceScreen from './src/screens/settings/termsOfServices';
+import PrivacyPolicyScreen from './src/screens/settings/privacyPolicy';
+import HelpSupportScreen from './src/screens/settings/helpSupport';
 
 const Stack = createNativeStackNavigator();
 
@@ -31,6 +34,9 @@ export default function App() {
           <Stack.Screen name='ResetPassword' component={ResetPasswordScreen} options={{ headerShown: false }}/>
           <Stack.Screen name="EditProfile" component={EditProfileScreen} options={{ headerShown: false }}/>
           <Stack.Screen name="ChangePassword" component={ChangePasswordScreen} options={{ headerShown: false }}/>
+          <Stack.Screen name="TermsOfService" component={TermsOfServiceScreen} options={{ headerShown: false }}/>
+          <Stack.Screen name="PrivacyPolicy" component={PrivacyPolicyScreen} options={{ headerShown: false }}/>
+          <Stack.Screen name="HelpSupport" component={HelpSupportScreen} options={{ headerShown: false }}/>
         </Stack.Navigator>
       </CartProvider>
     </NavigationContainer>
