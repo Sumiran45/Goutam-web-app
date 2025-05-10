@@ -39,8 +39,6 @@ export default function App() {
           <Stack.Screen name="TermsOfService" component={TermsOfServiceScreen} options={{ headerShown: false }}/>
           <Stack.Screen name="PrivacyPolicy" component={PrivacyPolicyScreen} options={{ headerShown: false }}/>
           <Stack.Screen name="HelpSupport" component={HelpSupportScreen} options={{ headerShown: false }}/>
-          {/* <Stack.Screen name='ForgotPassword' component={ForgotPasswordScreen}/> */}
-          {/* <Stack.Screen name='ResetPassword' component={ResetPasswordScreen} /> */}
           <Stack.Screen name='AdminScreen' component={AdminScreen}/>
         </Stack.Navigator>
       </CartProvider>

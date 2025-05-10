@@ -5,12 +5,15 @@ export type RootStackParamList = {
     Register: undefined;
     Home: undefined;
     Shop: undefined;
-    ProductDetail: { product: Product }; // Use correct param name/type
+    ProductDetail: { product: Product }; 
     Cart: undefined;
     ForgotPassword: undefined;
-    ResetPassword: { token: string }; // Update based on your use
+    ResetPassword: { token: string }; 
     EditProfile: undefined;
     ChangePassword: undefined;
     AdminScreen: undefined;
+    TermsOfService:undefined;
+    PrivacyPolicy:undefined;
+    HelpSupport:undefined;
   };
   
