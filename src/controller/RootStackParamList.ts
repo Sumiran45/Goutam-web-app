@@ -12,5 +12,6 @@ export type RootStackParamList = {
     EditProfile: undefined;
     ChangePassword: undefined;
     AdminScreen: undefined;
+    ArticleDetail: { article: any };
   };
   
