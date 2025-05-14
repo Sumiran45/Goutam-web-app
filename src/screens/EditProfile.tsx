@@ -13,10 +13,9 @@ import {
   ScrollView
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import * as ImagePicker from 'expo-image-picker';
 import { Ionicons } from '@expo/vector-icons';
 import { styles } from '../styles/editProfile.styles';
-import { DecodeToken } from '../controller/DecodeToken';
+import { getProfile, updateProfile } from '../controller/User.controller';
 
 interface User {
   _id: string | null;
@@ -37,88 +36,49 @@ export const EditProfileScreen: React.FC = () => {
   const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
-    loadMockData();
-  }, []);
- const [userInfo, setUserInfo] = useState<User | null>(null);
-  useEffect(() => {
     const fetchUserInfo = async () => {
-      const decoded = await DecodeToken();
-      if (decoded) {
-        setUserInfo(decoded);
+      setLoading(true);
+      try {
+        const userData = await getProfile();
+        setUser(userData);
+        setName(userData.name || '');
+        setEmail(userData.email || '');
+        setUsername(userData.username || '');
+        setImage(userData.profilePicture || null);
+      } catch (error) {
+        console.error(error);
+        Alert.alert('Error', 'Failed to load profile');
+      } finally {
+        setLoading(false);
       }
-      console.log(userInfo);
     };
 
     fetchUserInfo();
   }, []);
-  const loadMockData = () => {
+
+  const updateProfileFunc = async () => {
     setLoading(true);
     
-    setTimeout(() => {
-      const mockUser = {
-        _id: 'user123',
-        name: 'John Doe',
-        email: 'john.doe@example.com',
-        username: 'johndoe',
-        profilePicture: null
-      };
-      
-      setUser(user);
-      setName(mockUser.name);
-      setEmail(mockUser.email);
-      setUsername(mockUser.username);
-      setLoading(false);
-    }, 1000);
-  };
-
-  const pickImage = async () => {
-    const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
-
-    if (permissionResult.granted === false) {
-      Alert.alert('Permission Required', 'You need to allow access to your photos to change profile picture');
-      return;
-    }
-
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 0.7,
-    });
-
-    if (!result.canceled && result.assets && result.assets[0].uri) {
-      simulateImageUpload(result.assets[0].uri);
-    }
-  };
-
-  const simulateImageUpload = (imageUri: string) => {
-    setUploading(true);
+    const data = { name };  // Send the name in the JSON body
     
-    // Simulate upload delay
-    setTimeout(() => {
-      setImage(imageUri);
-      setUploading(false);
-      Alert.alert('Success', 'Profile picture updated successfully');
-    }, 1500);
-  };
-
-  const updateProfile = () => {
-    setLoading(true);
+    // Only add image if it's available
+    // if (image) {
+    //   data.image = image;
+    // }
     
-    setTimeout(() => {
-      const updatedUser = {
-        _id: user?._id || 'user123',
-        name,
-        email,
-        username,
-        profilePicture: image
-      } ;
-      
+    try {
+      const updatedUser = await updateProfile(data);  // Send JSON data
       setUser(updatedUser);
-      setLoading(false);
       Alert.alert('Success', 'Profile updated successfully');
-    }, 1000);
+    } catch (error) {
+      const err = error as any;
+      console.error('Profile update failed:', err.response || err.message);
+      Alert.alert('Error', 'Failed to update profile');
+    } finally {
+      setLoading(false);
+    }
   };
+  
 
   const navigateToChangePassword = () => {
     navigation.navigate('ChangePassword' as never);
@@ -159,7 +119,7 @@ export const EditProfileScreen: React.FC = () => {
                 <ActivityIndicator size="large" color="#3498db" />
               </View>
             ) : (
-              <TouchableOpacity onPress={pickImage} style={styles.imageContainer}>
+              <TouchableOpacity onPress={() => {}} style={styles.imageContainer}>
                 {image ? (
                   <Image source={{ uri: image }} style={styles.profileImage} />
                 ) : (
@@ -221,7 +181,7 @@ export const EditProfileScreen: React.FC = () => {
 
           <TouchableOpacity 
             style={styles.saveButton}
-            onPress={updateProfile}
+            onPress={updateProfileFunc}
             disabled={loading}
           >
             {loading ? (

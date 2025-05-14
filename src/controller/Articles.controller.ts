@@ -1,6 +1,6 @@
 // controller/article.controller.ts
 
-import API from '../Api/api';
+import api from '../Api/api';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export type Article = {
@@ -14,7 +14,7 @@ export type Article = {
 
 // Fetch all articles
 export const fetchArticles = async (): Promise<Article[]> => {
-  const res = await API.get('/articles');
+  const res = await api.get('/articles');
   return res.data.map((a: any) => ({
     id: a.id || a._id || Math.random().toString(),
     title: a.heading,
@@ -23,12 +23,13 @@ export const fetchArticles = async (): Promise<Article[]> => {
     summary: a.body.substring(0, 100) + '...',
     content: a.body,
   })).reverse();
+  // return res.data;
 };
 
 // Add a new article
 export const addArticle = async (title: string, content: string): Promise<Article> => {
   const token = await AsyncStorage.getItem('token');
-  const res = await API.post(
+  const res = await api.post(
     '/articles',
     {
       heading: title,
