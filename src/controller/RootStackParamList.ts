@@ -18,5 +18,6 @@ export type RootStackParamList = {
     AllActivities:undefined;
     UserDetails:undefined;
     ArticleDetails : undefined;
+    ArticleDetail: { article: any };
   };
   
