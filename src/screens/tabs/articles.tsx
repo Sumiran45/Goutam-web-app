@@ -1,7 +1,5 @@
-// screens/Articles/ArticlesScreen.tsx
-
 import React, { useState, useEffect } from 'react';
-import { View, Text, SafeAreaView, FlatList, TouchableOpacity, TextInput, Alert } from 'react-native';
+import { View, Text, SafeAreaView, FlatList, TouchableOpacity, TextInput, Alert, ActivityIndicator } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { styles } from '../../styles/articles.styles';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -10,18 +8,25 @@ import { Article, fetchArticles, addArticle } from '../../controller/Articles.co
 
 export const ArticlesScreen = () => {
   const [articles, setArticles] = useState<Article[]>([]);
+  const [userArticles, setUserArticles] = useState<Article[]>([]);
   const [loading, setLoading] = useState(true);
   const [newArticleTitle, setNewArticleTitle] = useState('');
   const [newArticleContent, setNewArticleContent] = useState('');
   const [showAddForm, setShowAddForm] = useState(false);
+  const [activeTab, setActiveTab] = useState<'all' | 'mine'>('all');
 
   type ArticlesScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'ArticleDetail'>;
   const navigation = useNavigation<ArticlesScreenNavigationProp>();
 
   const loadArticles = async () => {
     try {
+      setLoading(true);
       const data = await fetchArticles();
       setArticles(data);
+      
+      // Load user's articles
+      // const userData = await fetchUserArticles();
+      // setUserArticles(userData);
     } catch (err) {
       console.error(err);
       Alert.alert('Error', 'Failed to fetch articles.');
@@ -43,6 +48,7 @@ export const ArticlesScreen = () => {
     try {
       const newArticle = await addArticle(newArticleTitle, newArticleContent);
       setArticles(prev => [newArticle, ...prev]);
+      setUserArticles(prev => [newArticle, ...prev]);
       setNewArticleTitle('');
       setNewArticleContent('');
       setShowAddForm(false);
@@ -67,7 +73,38 @@ export const ArticlesScreen = () => {
       <Text style={styles.articleAuthor}>By {item.author}</Text>
       <Text style={styles.articleDate}>{formatDate(item.date)}</Text>
       <Text style={styles.articleSummary}>{item.summary}</Text>
-      <Text style={styles.readMore}>Read more →</Text>
+      
+      <View style={styles.articleActions}>
+        <Text style={styles.readMore}>Read more →</Text>
+        
+        {activeTab === 'mine' && (
+          <TouchableOpacity 
+            style={styles.deleteButton}
+            onPress={(e) => {
+              e.stopPropagation();
+              Alert.alert(
+                'Delete Article',
+                'Are you sure you want to delete this article?',
+                [
+                  { text: 'Cancel', style: 'cancel' },
+                  { 
+                    text: 'Delete', 
+                    style: 'destructive',
+                    onPress: () => {
+                      // Handle delete logic here
+                      setUserArticles(prev => prev.filter(article => article.id !== item.id));
+                      setArticles(prev => prev.filter(article => article.id !== item.id));
+                      Alert.alert('Success', 'Article deleted successfully');
+                    }
+                  }
+                ]
+              );
+            }}
+          >
+            <Text style={styles.deleteButtonText}>Delete</Text>
+          </TouchableOpacity>
+        )}
+      </View>
     </TouchableOpacity>
   );
 
@@ -77,11 +114,7 @@ export const ArticlesScreen = () => {
         <Text style={styles.headerTitle}>ARTICLES</Text>
       </View>
 
-      {!showAddForm ? (
-        <TouchableOpacity style={styles.addButton} onPress={() => setShowAddForm(true)}>
-          <Text style={styles.addButtonText}>Write New Article</Text>
-        </TouchableOpacity>
-      ) : (
+      {showAddForm ? (
         <View style={styles.inputContainer}>
           <TextInput
             style={styles.titleInput}
@@ -111,15 +144,54 @@ export const ArticlesScreen = () => {
             </TouchableOpacity>
           </View>
         </View>
-      )}
+      ) : (
+        <>
+          <View style={styles.tabContainer}>
+            <TouchableOpacity 
+              style={[styles.tab, activeTab === 'all' && styles.activeTab]}
+              onPress={() => setActiveTab('all')}
+            >
+              <Text style={[styles.tabText, activeTab === 'all' && styles.activeTabText]}>All Articles</Text>
+            </TouchableOpacity>
+            <TouchableOpacity 
+              style={[styles.tab, activeTab === 'mine' && styles.activeTab]}
+              onPress={() => setActiveTab('mine')}
+            >
+              <Text style={[styles.tabText, activeTab === 'mine' && styles.activeTabText]}>My Articles</Text>
+            </TouchableOpacity>
+          </View>
 
-      <FlatList
-        data={articles}
-        renderItem={renderItem}
-        keyExtractor={item => item.id}
-        contentContainerStyle={styles.listContainer}
-        showsVerticalScrollIndicator={false}
-      />
+          {loading ? (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="large" color="#3498db" />
+              <Text style={styles.loadingText}>Loading articles...</Text>
+            </View>
+          ) : (
+            <FlatList
+              data={activeTab === 'all' ? articles : userArticles}
+              renderItem={renderItem}
+              keyExtractor={item => item.id}
+              contentContainerStyle={[styles.listContainer, { paddingBottom: 80 }]} // Add padding at bottom for the fixed button
+              showsVerticalScrollIndicator={false}
+              ListEmptyComponent={
+                <View style={styles.emptyContainer}>
+                  <Text style={styles.emptyText}>
+                    {activeTab === 'all' ? 'No articles available' : 'You haven\'t published any articles yet'}
+                  </Text>
+                </View>
+              }
+            />
+          )}
+
+          {/* Fixed "Write New Article" button at the bottom */}
+          <TouchableOpacity 
+            style={styles.fixedAddButton} 
+            onPress={() => setShowAddForm(true)}
+          >
+            <Text style={styles.addButtonText}>Write New Article</Text>
+          </TouchableOpacity>
+        </>
+      )}
     </SafeAreaView>
   );
 };
