@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, ScrollView, Image, SafeAreaView, StatusBar } from 'react-native';
 import { Calendar } from 'react-native-calendars';
-import { periodDays, dailyTips, recommendedExercises } from '../../controller/Home.controller';
+import { periodDays, dailyTips, recommendedExercises } from '../../types/type';
 import { styles } from '../../styles/Home.styles';
 
 export const CalendarScreen = () => {

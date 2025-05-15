@@ -16,8 +16,11 @@ import ChangePasswordScreen from './src/screens/Forgot_Password/ChangePassword';
 import TermsOfServiceScreen from './src/screens/settings/termsOfServices';
 import PrivacyPolicyScreen from './src/screens/settings/privacyPolicy';
 import HelpSupportScreen from './src/screens/settings/helpSupport';
-import AdminScreen from './src/AdminScreen';
+import AdminScreen from './src/screens/Admin/AdminScreen';
 import { RootStackParamList } from './src/controller/RootStackParamList';
+import AllActivitiesScreen from './src/screens/Admin/home/AllActivity';
+import UserDetailsScreen from './src/screens/Admin/home/tabs/userScreen'
+import ArticleDetailScreen from './src/screens/Admin/home/tabs/article/articleScreen';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -39,7 +42,10 @@ export default function App() {
           <Stack.Screen name="TermsOfService" component={TermsOfServiceScreen} options={{ headerShown: false }}/>
           <Stack.Screen name="PrivacyPolicy" component={PrivacyPolicyScreen} options={{ headerShown: false }}/>
           <Stack.Screen name="HelpSupport" component={HelpSupportScreen} options={{ headerShown: false }}/>
-          <Stack.Screen name='AdminScreen' component={AdminScreen}/>
+          <Stack.Screen name='AdminScreen' component={AdminScreen} options={{ headerShown: false }}/>
+         <Stack.Screen name="AllActivities" component={AllActivitiesScreen} options={{ headerShown: false }}/>
+         <Stack.Screen name="UserDetails" component={UserDetailsScreen} options={{ headerShown: false }}/>
+         <Stack.Screen name="ArticleDetails" component={ArticleDetailScreen} options={{ headerShown: false }}/>
         </Stack.Navigator>
       </CartProvider>
     </NavigationContainer>
