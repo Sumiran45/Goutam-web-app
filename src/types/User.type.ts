@@ -4,7 +4,7 @@ export interface User {
     email: string;
     username: string;
     profilePicture?: string | null;
-    is_admin?: boolean; // If your backend uses this flag
-    articles?: string[]; // Optional: array of article IDs
+    is_admin?: boolean; 
+    articles?: string[]; 
   }
   

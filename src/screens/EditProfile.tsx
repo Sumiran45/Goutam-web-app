@@ -87,7 +87,7 @@ export const EditProfileScreen: React.FC = () => {
 
   const handleImagePress = () => {
     if (!uploading) {
-      pickImage();
+      // pickImage();
     }
   };
 

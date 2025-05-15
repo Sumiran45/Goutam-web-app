@@ -1,7 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import api from '../Api/api';
 
-import { User } from '../type/User.type'; // Define this type if needed
+import { User } from '../types/User.type'; 
 
 export const getProfile = async (): Promise<User> => {
     const token = await AsyncStorage.getItem('token');
@@ -19,7 +19,6 @@ export const getProfile = async (): Promise<User> => {
 export const updateProfile = async (data: { name: string}) => {
     const token = await AsyncStorage.getItem('token');
     
-    // Ensure you're sending the request with multipart/form-data
     const response = await api.put('/profile', data, {
       headers: {
         Authorization: `Bearer ${token}`,
