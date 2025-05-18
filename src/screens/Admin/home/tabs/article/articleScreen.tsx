@@ -21,10 +21,12 @@ import { globalStyles } from '../../../../../styles/admin/global';
 import { colors, moderateScale } from '../../../../../styles/admin/theme';
 import styles from '../../../../../styles/admin/article.style';
 import { mockArticles } from '../../../../../types/type';
+import { fetchArticles } from '../../../../../controller/Articles.controller';
+import { deleteArrticle } from '../../../../../Api/AdminDasboard.api';
 
 const ArticlesScreen = ({ navigation }:any) => {
-  const [articles, setArticles] = useState(mockArticles);
-  const [filteredArticles, setFilteredArticles] = useState(mockArticles);
+  const [articles, setArticles] = useState<any[]>([]);;
+  const [filteredArticles, setFilteredArticles] = useState<any[]>([]);;
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
   const [activeFilter, setActiveFilter] = useState('all');
@@ -32,11 +34,27 @@ const ArticlesScreen = ({ navigation }:any) => {
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [selectedArticle, setSelectedArticle] = useState(null);
   
+  const loadArticles = async () => {
+      try {
+        setLoading(true);
+        const data = await fetchArticles();
+        setArticles(data);
+        setFilteredArticles(data);
+        
+      } catch (err) {
+        console.error(err);
+        Alert.alert('Error', 'Failed to fetch articles.');
+      } finally {
+        setLoading(false);
+      }
+    };
   useEffect(() => {
+    loadArticles();
     setTimeout(() => {
       setLoading(false);
     }, 800);
   }, []);
+  
 
   useEffect(() => {
     filterArticles(activeFilter, searchQuery);
@@ -91,25 +109,19 @@ const ArticlesScreen = ({ navigation }:any) => {
     setArticles(updatedArticles);
   };
 
-  const handleDeleteArticle = (id:any) => {
-    Alert.alert(
-      "Delete Article",
-      "Are you sure you want to delete this article?",
-      [
-        {
-          text: "Cancel",
-          style: "cancel"
-        },
-        { 
-          text: "Delete", 
-          style: "destructive",
-          onPress: () => {
-            const updatedArticles = articles.filter((article:any) => article.id !== id);
-            setArticles(updatedArticles);
-          }
+  const handleDeleteArticle = async (id:any) => {
+    try {
+          await deleteArrticle(id);// call API to delete user
+      
+          // update state after successful deletion
+          const updatedArticles = articles.filter(article => article.id !== id);
+          setArticles(updatedArticles);
+          // setFilteredUsers(updatedUsers);
+      
+          // Alert.alert('Success', `User ${selectedUser.name} has been deleted`);
+        } catch (error) {
+          Alert.alert('Error', 'Failed to delete Article. Please try again.');
         }
-      ]
-    );
   };
 
   const handleArticlePress = (article:any) => {
@@ -193,18 +205,19 @@ const ArticlesScreen = ({ navigation }:any) => {
       {/* Articles list */}
       {filteredArticles.length > 0 ? (
         <FlatList
-          data={filteredArticles}
-          keyExtractor={(item) => item.id}
-          renderItem={({ item }) => (
-            <ArticleItem 
-              item={item} 
-              onPressDelete={handleDeleteArticle}
-              onPress={() => handleArticlePress(item)}
-            />
-          )}
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={styles.articleList}
-        />
+        data={filteredArticles}
+        keyExtractor={(item) => item.id}
+        renderItem={({ item }) => (
+          <ArticleItem 
+            item={item} 
+            onPressDelete={() => handleDeleteArticle(item.id)} // FIXED
+            onPress={() => handleArticlePress(item)}
+          />
+        )}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.articleList}
+      />
+      
       ) : (
         <View style={styles.emptyContainer}>
           <Icon name="file-alt" size={moderateScale(48)} color={colors.text.light} />
