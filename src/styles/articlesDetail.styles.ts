@@ -1,4 +1,6 @@
-import { StyleSheet } from 'react-native';
+import { StyleSheet, Dimensions } from 'react-native';
+
+const { width } = Dimensions.get('window');
 
 export const styles = StyleSheet.create({
   container: {
@@ -32,7 +34,7 @@ export const styles = StyleSheet.create({
     fontWeight: '500',
   },
   placeholder: {
-    width: 50, // To balance the header layout
+    width: 50, 
   },
   mainContainer: {
     flex: 1,
@@ -43,15 +45,15 @@ export const styles = StyleSheet.create({
     flex: 1,
   },
   contentContainer: {
-    padding: 20,
+    padding: width > 320 ? 20 : 15,
     paddingBottom: 30,
   },
   title: {
-    fontSize: 24,
+    fontSize: width > 375 ? 24 : 22, 
     fontWeight: 'bold',
     color: '#333',
     marginBottom: 10,
-    lineHeight: 32,
+    lineHeight: width > 375 ? 32 : 28,
   },
   metaContainer: {
     flexDirection: 'row',
@@ -70,15 +72,15 @@ export const styles = StyleSheet.create({
     color: '#3498db',
   },
   content: {
-    fontSize: 16,
+    fontSize: width > 320 ? 16 : 15,
     color: '#444',
-    lineHeight: 24,
+    lineHeight: width > 320 ? 24 : 22,
   },
   spacer: {
     height: 20,
   },
   bottomButtonContainer: {
-    padding: 15,
+    padding: width > 320 ? 15 : 10, 
     borderTopWidth: 1,
     borderTopColor: '#e0e0e0',
     backgroundColor: '#ffffff',
@@ -122,10 +124,10 @@ export const styles = StyleSheet.create({
   actionButtonText: {
     color: '#ffffff',
     fontWeight: 'bold',
-    fontSize: 16,
+    fontSize: width > 320 ? 16 : 14,
   },
   editTitleInput: {
-    fontSize: 20,
+    fontSize: width > 375 ? 20 : 18, 
     fontWeight: 'bold',
     color: '#333',
     marginBottom: 10,
@@ -136,9 +138,9 @@ export const styles = StyleSheet.create({
     borderColor: '#ddd',
   },
   editContentInput: {
-    fontSize: 16,
+    fontSize: width > 320 ? 16 : 15, 
     color: '#444',
-    lineHeight: 24,
+    lineHeight: width > 320 ? 24 : 22,
     padding: 10,
     backgroundColor: '#f0f0f0',
     borderRadius: 8,
@@ -146,5 +148,62 @@ export const styles = StyleSheet.create({
     borderColor: '#ddd',
     minHeight: 200,
     textAlignVertical: 'top',
+  },
+  // Modal styles
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContainer: {
+    width: width * 0.85, 
+    backgroundColor: 'white',
+    borderRadius: 10,
+    padding: 20,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 15,
+    color: '#333',
+  },
+  modalText: {
+    fontSize: 16,
+    marginBottom: 20,
+    textAlign: 'center',
+    color: '#555',
+  },
+  modalButtonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '100%',
+  },
+  modalButton: {
+    flex: 1,
+    padding: 10,
+    borderRadius: 5,
+    marginHorizontal: 5,
+    alignItems: 'center',
+  },
+  cancelModalButton: {
+    backgroundColor: '#95a5a6',
+  },
+  confirmModalButton: {
+    backgroundColor: '#e74c3c',
+  },
+  modalButtonText: {
+    color: 'white',
+    fontWeight: 'bold',
+    fontSize: 16,
   },
 });

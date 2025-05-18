@@ -1,29 +1,101 @@
 import React, { useState } from 'react';
-import { View, Text, SafeAreaView, ScrollView, TouchableOpacity, Alert, TextInput } from 'react-native';
+import { View, Text, SafeAreaView, ScrollView, TouchableOpacity, Alert, TextInput, Modal } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { styles } from '../../styles/articlesDetail.styles';
 
 export const ArticleDetailScreen = ({ route }: any) => {
-  const { article } = route.params;
+  const { article, currentUser } = route.params;
   const navigation = useNavigation();
   const [isEditing, setIsEditing] = useState(false);
   const [editedTitle, setEditedTitle] = useState(article.title);
   const [editedContent, setEditedContent] = useState(article.content);
-  const isUserArticle = true;
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showSaveModal, setShowSaveModal] = useState(false);
+  
+  const isUserArticle = currentUser && article.author === currentUser.name;
 
   const formatDate = (dateString: string) => {
     const options: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'long', day: 'numeric' };
     return new Date(dateString).toLocaleDateString(undefined, options);
   };
 
+  const handleSaveChanges = () => {
+    // Here you would implement the actual save logic
+    // For now, we'll just close the modal and editing mode
+    setShowSaveModal(false);
+    setIsEditing(false);
+    Alert.alert('Success', 'Article updated successfully');
+  };
+
+  const handleDeleteArticle = () => {
+    setShowDeleteModal(false);
+    Alert.alert('Success', 'Article deleted successfully');
+    navigation.goBack();
+  };
+
+  const DeleteConfirmationModal = () => (
+    <Modal
+      animationType="fade"
+      transparent={true}
+      visible={showDeleteModal}
+      onRequestClose={() => setShowDeleteModal(false)}
+    >
+      <View style={styles.modalOverlay}>
+        <View style={styles.modalContainer}>
+          <Text style={styles.modalTitle}>Delete Article</Text>
+          <Text style={styles.modalText}>Are you sure you want to delete this article?</Text>
+          <View style={styles.modalButtonContainer}>
+            <TouchableOpacity 
+              style={[styles.modalButton, styles.cancelModalButton]} 
+              onPress={() => setShowDeleteModal(false)}
+            >
+              <Text style={styles.modalButtonText}>Cancel</Text>
+            </TouchableOpacity>
+            <TouchableOpacity 
+              style={[styles.modalButton, styles.confirmModalButton]} 
+              onPress={handleDeleteArticle}
+            >
+              <Text style={styles.modalButtonText}>Delete</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
+    </Modal>
+  );
+
+  const SaveConfirmationModal = () => (
+    <Modal
+      animationType="fade"
+      transparent={true}
+      visible={showSaveModal}
+      onRequestClose={() => setShowSaveModal(false)}
+    >
+      <View style={styles.modalOverlay}>
+        <View style={styles.modalContainer}>
+          <Text style={styles.modalTitle}>Save Changes</Text>
+          <Text style={styles.modalText}>Are you sure you want to save these changes?</Text>
+          <View style={styles.modalButtonContainer}>
+            <TouchableOpacity 
+              style={[styles.modalButton, styles.cancelModalButton]} 
+              onPress={() => setShowSaveModal(false)}
+            >
+              <Text style={styles.modalButtonText}>Cancel</Text>
+            </TouchableOpacity>
+            <TouchableOpacity 
+              style={[styles.modalButton, styles.confirmModalButton]} 
+              onPress={handleSaveChanges}
+            >
+              <Text style={styles.modalButtonText}>Save</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
+    </Modal>
+  );
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity 
-          style={styles.backButton}
-          onPress={() => navigation.goBack()}
-        >
-        </TouchableOpacity>
         <Text style={styles.headerTitle}>ARTICLE</Text>
         <View style={styles.placeholder} />
       </View>
@@ -33,7 +105,7 @@ export const ArticleDetailScreen = ({ route }: any) => {
           style={styles.scrollContainer}
           contentContainerStyle={styles.contentContainer}
         >
-          {isEditing ? (
+          {isEditing && isUserArticle ? (
             <>
               <TextInput
                 style={styles.editTitleInput}
@@ -90,6 +162,7 @@ export const ArticleDetailScreen = ({ route }: any) => {
                   </TouchableOpacity>
                   <TouchableOpacity 
                     style={[styles.actionButton, styles.saveButton]}
+                    onPress={() => setShowSaveModal(true)}
                   >
                     <Text style={styles.actionButtonText}>Save Changes</Text>
                   </TouchableOpacity>
@@ -104,6 +177,7 @@ export const ArticleDetailScreen = ({ route }: any) => {
                   </TouchableOpacity>
                   <TouchableOpacity 
                     style={[styles.actionButton, styles.deleteButton]}
+                    onPress={() => setShowDeleteModal(true)}
                   >
                     <Text style={styles.actionButtonText}>Delete</Text>
                   </TouchableOpacity>
@@ -113,6 +187,9 @@ export const ArticleDetailScreen = ({ route }: any) => {
           )}
         </View>
       </View>
+      
+      <DeleteConfirmationModal />
+      <SaveConfirmationModal />
     </SafeAreaView>
   );
 };

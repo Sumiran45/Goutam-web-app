@@ -1,42 +1,66 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, SafeAreaView, FlatList, TouchableOpacity, TextInput, Alert, ActivityIndicator } from 'react-native';
+import { View, Text, SafeAreaView, FlatList, TouchableOpacity, TextInput, Alert, ActivityIndicator, Modal } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { styles } from '../../styles/articles.styles';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../controller/RootStackParamList';
 import { Article, fetchArticles, addArticle } from '../../controller/Articles.controller';
+import { getProfile } from '../../controller/User.controller';
+
+interface User {
+  id: string;
+  username: string;
+  email: string;
+  name: string;
+  image: string | null;
+  is_active: boolean;
+  purchased_products: string[];
+  articles: string[];
+}
 
 export const ArticlesScreen = () => {
   const [articles, setArticles] = useState<Article[]>([]);
   const [userArticles, setUserArticles] = useState<Article[]>([]);
+  const [otherArticles, setOtherArticles] = useState<Article[]>([]);
   const [loading, setLoading] = useState(true);
   const [newArticleTitle, setNewArticleTitle] = useState('');
   const [newArticleContent, setNewArticleContent] = useState('');
   const [showAddForm, setShowAddForm] = useState(false);
   const [activeTab, setActiveTab] = useState<'all' | 'mine'>('all');
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [articleToDelete, setArticleToDelete] = useState<string | null>(null);
 
   type ArticlesScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'ArticleDetail'>;
   const navigation = useNavigation<ArticlesScreenNavigationProp>();
 
-  const loadArticles = async () => {
+  const loadData = async () => {
     try {
       setLoading(true);
-      const data = await fetchArticles();
-      setArticles(data);
       
-      // Load user's articles
-      // const userData = await fetchUserArticles();
-      // setUserArticles(userData);
+      const userProfile = await getProfile();
+      setCurrentUser(userProfile);
+      
+      const allArticles = await fetchArticles();
+      setArticles(allArticles);
+      
+      // Filter articles created by the logged-in user
+      const myArticles = allArticles.filter(article => article.author === userProfile.name);
+      setUserArticles(myArticles);
+      
+      // Filter articles NOT created by the logged-in user
+      const others = allArticles.filter(article => article.author !== userProfile.name);
+      setOtherArticles(others);
     } catch (err) {
       console.error(err);
-      Alert.alert('Error', 'Failed to fetch articles.');
+      Alert.alert('Error', 'Failed to fetch data.');
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    loadArticles();
+    loadData();
   }, []);
 
   const handleAddArticle = async () => {
@@ -64,49 +88,46 @@ export const ArticlesScreen = () => {
     return new Date(dateString).toLocaleDateString(undefined, options);
   };
 
-  const renderItem = ({ item }: { item: Article }) => (
-    <TouchableOpacity
-      style={styles.articleCard}
-      onPress={() => navigation.navigate('ArticleDetail', { article: item })}
-    >
-      <Text style={styles.articleTitle}>{item.title}</Text>
-      <Text style={styles.articleAuthor}>By {item.author}</Text>
-      <Text style={styles.articleDate}>{formatDate(item.date)}</Text>
-      <Text style={styles.articleSummary}>{item.summary}</Text>
-      
-      <View style={styles.articleActions}>
-        <Text style={styles.readMore}>Read more →</Text>
+  const handleDeleteConfirmation = (articleId: string) => {
+    setArticleToDelete(articleId);
+    setShowDeleteModal(true);
+  };
+
+  const handleDeleteArticle = () => {
+    if (articleToDelete) {
+      // Handle delete logic here
+      setUserArticles(prev => prev.filter(article => article.id !== articleToDelete));
+      setArticles(prev => prev.filter(article => article.id !== articleToDelete));
+      setOtherArticles(prev => prev.filter(article => article.id !== articleToDelete));
+      setShowDeleteModal(false);
+      setArticleToDelete(null);
+      Alert.alert('Success', 'Article deleted successfully');
+    }
+  };
+
+  const renderItem = ({ item }: { item: Article }) => {
+    const isMyArticle = currentUser && item.author === currentUser.name;
+    const showDeleteButton = isMyArticle && activeTab === 'mine';
+    
+    return (
+      <TouchableOpacity
+        style={styles.articleCard}
+        onPress={() => navigation.navigate('ArticleDetail', { 
+          article: item,
+          currentUser: currentUser 
+        })}
+      >
+        <Text style={styles.articleTitle}>{item.title}</Text>
+        <Text style={styles.articleAuthor}>By {item.author}</Text>
+        <Text style={styles.articleDate}>{formatDate(item.date)}</Text>
+        <Text style={styles.articleSummary}>{item.summary}</Text>
         
-        {activeTab === 'mine' && (
-          <TouchableOpacity 
-            style={styles.deleteButton}
-            onPress={(e) => {
-              e.stopPropagation();
-              Alert.alert(
-                'Delete Article',
-                'Are you sure you want to delete this article?',
-                [
-                  { text: 'Cancel', style: 'cancel' },
-                  { 
-                    text: 'Delete', 
-                    style: 'destructive',
-                    onPress: () => {
-                      // Handle delete logic here
-                      setUserArticles(prev => prev.filter(article => article.id !== item.id));
-                      setArticles(prev => prev.filter(article => article.id !== item.id));
-                      Alert.alert('Success', 'Article deleted successfully');
-                    }
-                  }
-                ]
-              );
-            }}
-          >
-            <Text style={styles.deleteButtonText}>Delete</Text>
-          </TouchableOpacity>
-        )}
-      </View>
-    </TouchableOpacity>
-  );
+        <View style={styles.articleActions}>
+          <Text style={styles.readMore}>Read more →</Text>
+        </View>
+      </TouchableOpacity>
+    );
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -138,7 +159,19 @@ export const ArticlesScreen = () => {
             </TouchableOpacity>
             <TouchableOpacity
               style={[styles.actionButton, styles.publishButton]}
-              onPress={handleAddArticle}
+              onPress={() => {
+                Alert.alert(
+                  'Confirm Publish',
+                  'Are you sure you want to publish this article?',
+                  [
+                    { text: 'Cancel', style: 'cancel' },
+                    { 
+                      text: 'Publish', 
+                      onPress: handleAddArticle 
+                    }
+                  ]
+                );
+              }}
             >
               <Text style={styles.actionButtonText}>Publish</Text>
             </TouchableOpacity>
@@ -168,10 +201,10 @@ export const ArticlesScreen = () => {
             </View>
           ) : (
             <FlatList
-              data={activeTab === 'all' ? articles : userArticles}
+              data={activeTab === 'all' ? otherArticles : userArticles}
               renderItem={renderItem}
               keyExtractor={item => item.id}
-              contentContainerStyle={[styles.listContainer, { paddingBottom: 80 }]} // Add padding at bottom for the fixed button
+              contentContainerStyle={[styles.listContainer, { paddingBottom: 80 }]} 
               showsVerticalScrollIndicator={false}
               ListEmptyComponent={
                 <View style={styles.emptyContainer}>
@@ -183,7 +216,6 @@ export const ArticlesScreen = () => {
             />
           )}
 
-          {/* Fixed "Write New Article" button at the bottom */}
           <TouchableOpacity 
             style={styles.fixedAddButton} 
             onPress={() => setShowAddForm(true)}
@@ -192,6 +224,7 @@ export const ArticlesScreen = () => {
           </TouchableOpacity>
         </>
       )}
+      
     </SafeAreaView>
   );
 };

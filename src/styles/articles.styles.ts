@@ -1,4 +1,6 @@
-import { StyleSheet } from 'react-native';
+import { StyleSheet, Dimensions } from 'react-native';
+
+const { width } = Dimensions.get('window');
 
 export const styles = StyleSheet.create({
   container: {
@@ -40,7 +42,7 @@ export const styles = StyleSheet.create({
     right: 20,
     backgroundColor: '#3498db',
     borderRadius: 8,
-    padding: 14,
+    padding: width > 320 ? 14 : 12, 
     alignItems: 'center',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
@@ -51,7 +53,7 @@ export const styles = StyleSheet.create({
   addButtonText: {
     color: '#ffffff',
     fontWeight: 'bold',
-    fontSize: 16,
+    fontSize: width > 320 ? 16 : 14,
   },
   inputContainer: {
     padding: 15,
@@ -69,7 +71,7 @@ export const styles = StyleSheet.create({
     backgroundColor: '#f5f5f5',
     borderRadius: 8,
     padding: 12,
-    fontSize: 16,
+    fontSize: width > 320 ? 16 : 14,
     marginBottom: 10,
     borderWidth: 1,
     borderColor: '#e0e0e0',
@@ -78,7 +80,7 @@ export const styles = StyleSheet.create({
     backgroundColor: '#f5f5f5',
     borderRadius: 8,
     padding: 12,
-    fontSize: 16,
+    fontSize: width > 320 ? 16 : 14,
     minHeight: 150,
     textAlignVertical: 'top',
     marginBottom: 10,
@@ -96,7 +98,7 @@ export const styles = StyleSheet.create({
   },
   tab: {
     flex: 1,
-    padding: 12,
+    padding: width > 320 ? 12 : 10, 
     alignItems: 'center',
     backgroundColor: '#f0f0f0',
   },
@@ -104,7 +106,7 @@ export const styles = StyleSheet.create({
     backgroundColor: '#3498db',
   },
   tabText: {
-    fontSize: 14,
+    fontSize: width > 320 ? 14 : 12,
     fontWeight: '500',
     color: '#555',
   },
@@ -119,7 +121,7 @@ export const styles = StyleSheet.create({
   actionButton: {
     flex: 1,
     borderRadius: 8,
-    padding: 12,
+    padding: width > 320 ? 12 : 10, 
     alignItems: 'center',
     marginHorizontal: 5,
   },
@@ -132,7 +134,7 @@ export const styles = StyleSheet.create({
   actionButtonText: {
     color: '#ffffff',
     fontWeight: 'bold',
-    fontSize: 16,
+    fontSize: width > 320 ? 16 : 14, 
   },
   listContainer: {
     padding: 15,
@@ -152,25 +154,25 @@ export const styles = StyleSheet.create({
     borderColor: '#eaeaea',
   },
   articleTitle: {
-    fontSize: 18,
+    fontSize: width > 375 ? 18 : 16,
     fontWeight: 'bold',
     color: '#333',
     marginBottom: 5,
   },
   articleAuthor: {
-    fontSize: 14,
+    fontSize: width > 320 ? 14 : 12, 
     color: '#666',
     marginBottom: 3,
   },
   articleDate: {
-    fontSize: 14,
+    fontSize: width > 320 ? 14 : 12,
     color: '#3498db',
     marginBottom: 8,
   },
   articleSummary: {
-    fontSize: 16,
+    fontSize: width > 375 ? 16 : 14, 
     color: '#444',
-    lineHeight: 22,
+    lineHeight: width > 375 ? 22 : 20,
     marginBottom: 10,
   },
   articleActions: {
@@ -179,7 +181,7 @@ export const styles = StyleSheet.create({
     alignItems: 'center',
   },
   readMore: {
-    fontSize: 14,
+    fontSize: width > 320 ? 14 : 12, 
     color: '#3498db',
     fontWeight: '600',
   },
@@ -190,7 +192,7 @@ export const styles = StyleSheet.create({
   },
   deleteButtonText: {
     color: '#ffffff',
-    fontSize: 12,
+    fontSize: width > 320 ? 12 : 10,
     fontWeight: 'bold',
   },
   loadingContainer: {
@@ -209,10 +211,65 @@ export const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   emptyText: {
-    fontSize: 16,
+    fontSize: width > 320 ? 16 : 14,
     color: '#666',
     textAlign: 'center',
   },
+  // Modal styles
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContainer: {
+    width: width * 0.85, 
+    backgroundColor: 'white',
+    borderRadius: 10,
+    padding: 20,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 15,
+    color: '#333',
+  },
+  modalText: {
+    fontSize: 16,
+    marginBottom: 20,
+    textAlign: 'center',
+    color: '#555',
+  },
+  modalButtonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '100%',
+  },
+  modalButton: {
+    flex: 1,
+    padding: 10,
+    borderRadius: 5,
+    marginHorizontal: 5,
+    alignItems: 'center',
+  },
+  cancelModalButton: {
+    backgroundColor: '#95a5a6',
+  },
+  confirmModalButton: {
+    backgroundColor: '#e74c3c',
+  },
+  modalButtonText: {
+    color: 'white',
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
 });
-
-
