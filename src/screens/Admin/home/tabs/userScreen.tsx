@@ -17,6 +17,7 @@ import {
 import Icon from 'react-native-vector-icons/FontAwesome5';
 import { colors, moderateScale } from '../../../../styles/admin/theme';
 import { styles } from '../../../../styles/admin/userScreen.style';
+import { deleteUser, fetchUsers } from '../../../../Api/AdminDasboard.api';
 
 
 // Mocked data - would be replaced with API calls in production
@@ -59,9 +60,19 @@ export default function UsersScreen({ navigation }: any) {
 
   // Fetch users data
   useEffect(() => {
-    fetchUsers();
+  
+       getUsers();
   }, []);
-
+  const getUsers = async () => {
+    try {
+      const users = await fetchUsers();
+        setUsers(users);
+        setFilteredUsers(users);
+        setIsLoading(false);
+    } catch (error) {
+      console.error('Failed to fetch user count:', error);
+    }
+  };
   // Filter users based on search query
   useEffect(() => {
     if (searchQuery.trim() === '') {
@@ -76,19 +87,19 @@ export default function UsersScreen({ navigation }: any) {
     }
   }, [searchQuery, users]);
 
-  const fetchUsers = () => {
-    setIsLoading(true);
-    // Simulating API call
-    setTimeout(() => {
-      setUsers(MOCK_USERS);
-      setFilteredUsers(MOCK_USERS);
-      setIsLoading(false);
-    }, 1000);
-  };
+  // const fetchUsers = () => {
+  //   setIsLoading(true);
+  //   // Simulating API call
+  //   setTimeout(() => {
+  //     setUsers(MOCK_USERS);
+  //     setFilteredUsers(MOCK_USERS);
+  //     setIsLoading(false);
+  //   }, 1000);
+  // };
 
   const handleRefresh = () => {
     setIsRefreshing(true);
-    fetchUsers();
+    getUsers();
     setIsRefreshing(false);
   };
 
@@ -97,17 +108,36 @@ export default function UsersScreen({ navigation }: any) {
     setDetailsModalVisible(true);
   };
 
-  const handleDeleteUser = () => {
-    if (!selectedUser) return;
-    // In a real app, you would make an API call to delete the user
-    const updatedUsers = users.filter(user => user.id !== selectedUser.id);
-    setUsers(updatedUsers);
-    setFilteredUsers(updatedUsers);
-    Alert.alert('Success', `User ${selectedUser.name} has been deleted`);
-    setConfirmModalVisible(false);
-    setDetailsModalVisible(false);
-  };
+  // const handleDeleteUser = () => {
+  //   if (!selectedUser) return;
+  //   // In a real app, you would make an API call to delete the user
+  //   const updatedUsers = users.filter(user => user.id !== selectedUser.id);
+  //   setUsers(updatedUsers);
+  //   setFilteredUsers(updatedUsers);
+  //   Alert.alert('Success', `User ${selectedUser.name} has been deleted`);
+  //   setConfirmModalVisible(false);
+  //   setDetailsModalVisible(false);
+  // };
 
+  const handleDeleteUser = async () => {
+    if (!selectedUser) return;
+  
+    try {
+      await deleteUser(selectedUser.id); // call API to delete user
+  
+      // update state after successful deletion
+      const updatedUsers = users.filter(user => user.id !== selectedUser.id);
+      setUsers(updatedUsers);
+      setFilteredUsers(updatedUsers);
+  
+      Alert.alert('Success', `User ${selectedUser.name} has been deleted`);
+    } catch (error) {
+      Alert.alert('Error', 'Failed to delete user. Please try again.');
+    } finally {
+      setConfirmModalVisible(false);
+      setDetailsModalVisible(false);
+    }
+  };
   const handleToggleUserStatus = () => {
     if (!selectedUser) return;
     const updatedUsers = users.map(user => {
