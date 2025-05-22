@@ -1,7 +1,10 @@
 import React, { useState } from 'react';
 import { View, Text, SafeAreaView, ScrollView, TouchableOpacity, Alert, TextInput, Modal } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { styles } from '../../styles/articlesDetail.styles';
+import { deleteArrticle } from '../../Api/AdminDasboard.api';
+import { fetchArticles, updateArticle } from '../../controller/Articles.controller';
+import { ArticlesScreen } from './articles';
 
 export const ArticleDetailScreen = ({ route }: any) => {
   const { article, currentUser } = route.params;
@@ -19,19 +22,37 @@ export const ArticleDetailScreen = ({ route }: any) => {
     return new Date(dateString).toLocaleDateString(undefined, options);
   };
 
-  const handleSaveChanges = () => {
-    // Here you would implement the actual save logic
-    // For now, we'll just close the modal and editing mode
-    setShowSaveModal(false);
-    setIsEditing(false);
-    Alert.alert('Success', 'Article updated successfully');
+  // useFocusEffect(
+  //   React.useCallback(() => {
+  //     fetchArticles(); // function that calls the API and updates your list state
+  //   }, [])
+  // );
+  const handleSaveChanges = async () => {
+    try {
+      await updateArticle(article.id, editedTitle, editedContent);
+      setShowSaveModal(false);
+      setIsEditing(false);
+      Alert.alert('Success', 'Article updated successfully');
+    } catch (error) {
+      console.error('Update error:', error);
+      Alert.alert('Error', 'Failed to update article. Please try again.');
+    }
   };
+  
 
-  const handleDeleteArticle = () => {
-    setShowDeleteModal(false);
-    Alert.alert('Success', 'Article deleted successfully');
-    navigation.goBack();
+  const handleDeleteArticle = async () => {
+    try {
+      await deleteArrticle(article.id); // or article._id if you're using MongoDB
+     
+      setShowDeleteModal(false);
+      Alert.alert('Success', 'Article deleted successfully');
+      navigation.goBack();
+    } catch (error) {
+      console.error('Delete error:', error);
+      Alert.alert('Error', 'Failed to delete article. Please try again.');
+    }
   };
+  
 
   const DeleteConfirmationModal = () => (
     <Modal
