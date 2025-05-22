@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, SafeAreaView, FlatList, TouchableOpacity, TextInput, Alert, ActivityIndicator, Modal } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { styles } from '../../styles/articles.styles';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../controller/RootStackParamList';
@@ -50,7 +50,7 @@ export const ArticlesScreen = () => {
       
       // Filter articles NOT created by the logged-in user
       const others = allArticles.filter(article => article.author !== userProfile.name);
-      setOtherArticles(others);
+      setOtherArticles(allArticles);
     } catch (err) {
       console.error(err);
       Alert.alert('Error', 'Failed to fetch data.');
@@ -59,10 +59,11 @@ export const ArticlesScreen = () => {
     }
   };
 
-  useEffect(() => {
-    loadData();
-  }, []);
-
+  useFocusEffect(
+    React.useCallback(() => {
+      loadData();
+    }, [])
+  );
   const handleAddArticle = async () => {
     if (newArticleTitle.trim() === '' || newArticleContent.trim() === '') {
       Alert.alert('Validation', 'Title and content are required.');
@@ -70,7 +71,10 @@ export const ArticlesScreen = () => {
     }
 
     try {
+      console.log("Handle article called")
       const newArticle = await addArticle(newArticleTitle, newArticleContent);
+      console.log("returnd from api call")
+     loadData();
       setArticles(prev => [newArticle, ...prev]);
       setUserArticles(prev => [newArticle, ...prev]);
       setNewArticleTitle('');
@@ -158,22 +162,10 @@ export const ArticlesScreen = () => {
               <Text style={styles.actionButtonText}>Cancel</Text>
             </TouchableOpacity>
             <TouchableOpacity
-              style={[styles.actionButton, styles.publishButton]}
-              onPress={() => {
-                Alert.alert(
-                  'Confirm Publish',
-                  'Are you sure you want to publish this article?',
-                  [
-                    { text: 'Cancel', style: 'cancel' },
-                    { 
-                      text: 'Publish', 
-                      onPress: handleAddArticle 
-                    }
-                  ]
-                );
-              }}
-            >
-              <Text style={styles.actionButtonText}>Publish</Text>
+  style={[styles.actionButton, styles.publishButton]}
+  onPress={handleAddArticle}
+>
+  <Text style={styles.actionButtonText}>Publish</Text>
             </TouchableOpacity>
           </View>
         </View>

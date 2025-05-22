@@ -41,9 +41,42 @@ export const addArticle = async (title: string, content: string): Promise<Articl
   return {
     id: a.id || a._id || Math.random().toString(),
     title: a.heading,
-    author: a.author?.email || 'You',
+    author: a.author?.name || 'You',
     date: a.date,
     summary: a.body.substring(0, 100) + '...',
     content: a.body,
   };
 };
+
+
+
+
+
+export const updateArticle = async (
+  article_id: string,
+  title: string,
+  content: string
+) => {
+  const token = await AsyncStorage.getItem('token');
+  const response = await api.put(
+    `/articles/${article_id}`,
+    {
+      heading: title,
+      body: content,
+    },
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+
+  return {
+    id: response.data.id || response.data._id,
+    title: response.data.heading,
+    content: response.data.body,
+    author: response.data.author?.email || 'Unknown',
+    date: response.data.date,
+  };
+};
+

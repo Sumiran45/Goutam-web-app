@@ -11,34 +11,30 @@ import {
 import Icon from 'react-native-vector-icons/FontAwesome5';
 import { colors, moderateScale } from '../../../../../styles/admin/theme';
 import styles from '../../../../../styles/admin/article.style';
+import { addArticle } from '../../../../../controller/Articles.controller';
 
 const NewArticleModal = ({ visible, onClose, onSave }:any) => {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!title.trim() || !content.trim()) {
       Alert.alert('Error', 'Title and content are required');
       return;
     }
-    
-    const newArticle = {
-      id: Date.now().toString(),
-      title,
-      content,
-      author: 'Admin User',
-      authorId: 'admin',
-      date: new Date().toISOString(),
-      likes: 0,
-      comments: 0,
-    };
-    
-    onSave(newArticle);
-    setTitle('');
-    setContent('');
-    onClose();
+  
+    try {
+      const newArticle = await addArticle(title, content); // Call API
+      onSave(newArticle); // Pass to parent to update list
+      setTitle('');
+      setContent('');
+      onClose();
+    } catch (error) {
+      console.error('Failed to create article:', error);
+      Alert.alert('Error', 'Failed to publish article. Please try again.');
+    }
   };
-
+  
   return (
     <Modal
       visible={visible}
