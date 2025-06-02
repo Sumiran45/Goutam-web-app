@@ -1,118 +1,96 @@
 import React, { useState } from 'react';
-import { View, Text, SafeAreaView, ScrollView, TouchableOpacity, Alert, TextInput, Modal } from 'react-native';
+import {
+  View,
+  Text,
+  SafeAreaView,
+  ScrollView,
+  TouchableOpacity,
+  Alert,
+  Dimensions,
+  Linking,
+} from 'react-native';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { styles } from '../../styles/articlesDetail.styles';
-import { deleteArrticle } from '../../Api/AdminDasboard.api';
-import { fetchArticles, updateArticle } from '../../controller/Articles.controller';
-import { ArticlesScreen } from './articles';
+
+const { width } = Dimensions.get('window');
 
 export const ArticleDetailScreen = ({ route }: any) => {
   const { article, currentUser } = route.params;
   const navigation = useNavigation();
-  const [isEditing, setIsEditing] = useState(false);
-  const [editedTitle, setEditedTitle] = useState(article.title);
-  const [editedContent, setEditedContent] = useState(article.content);
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [showSaveModal, setShowSaveModal] = useState(false);
-  
-  const isUserArticle = currentUser && article.author === currentUser.name;
+
+  const extractYouTubeId = (url: string) => {
+    const regExp = /^.*((youtu.be\/)|(v\/)|(\/u\/\w\/)|(embed\/)|(watch\?))\??v?=?([^#&?]*).*/;
+    const match = url.match(regExp);
+    return (match && match[7].length === 11) ? match[7] : null;
+  };
+
+  const getYouTubeThumbnail = (videoId: string) => {
+    return `https://youtu.be/PeL_XtBrOxw?si=xYhvi61tHrVEESKb`;
+  };
+
+  const openVideo = async (videoUrl: string) => {
+    try {
+      const supported = await Linking.canOpenURL(videoUrl);
+      if (supported) {
+        await Linking.openURL(videoUrl);
+      } else {
+        Alert.alert(
+          'Cannot Open Video',
+          'Unable to open the video. Please check if you have a compatible app installed.',
+          [{ text: 'OK' }]
+        );
+      }
+    } catch (error) {
+      Alert.alert(
+        'Error',
+        'An error occurred while trying to open the video.',
+        [{ text: 'OK' }]
+      );
+    }
+  };
 
   const formatDate = (dateString: string) => {
     const options: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'long', day: 'numeric' };
     return new Date(dateString).toLocaleDateString(undefined, options);
   };
 
-  // useFocusEffect(
-  //   React.useCallback(() => {
-  //     fetchArticles(); // function that calls the API and updates your list state
-  //   }, [])
-  // );
-  const handleSaveChanges = async () => {
-    try {
-      await updateArticle(article.id, editedTitle, editedContent);
-      setShowSaveModal(false);
-      setIsEditing(false);
-      Alert.alert('Success', 'Article updated successfully');
-    } catch (error) {
-      console.error('Update error:', error);
-      Alert.alert('Error', 'Failed to update article. Please try again.');
-    }
-  };
-  
+  const videoId = article.videoUrl ? extractYouTubeId(article.videoUrl) : null;
+  const thumbnailUrl = videoId ? getYouTubeThumbnail(videoId) : null;
 
-  const handleDeleteArticle = async () => {
-    try {
-      await deleteArrticle(article.id); // or article._id if you're using MongoDB
-     
-      setShowDeleteModal(false);
-      Alert.alert('Success', 'Article deleted successfully');
-      navigation.goBack();
-    } catch (error) {
-      console.error('Delete error:', error);
-      Alert.alert('Error', 'Failed to delete article. Please try again.');
-    }
-  };
-  
+  const VideoSection = () => {
+    if (!article.videoUrl) return null;
 
-  const DeleteConfirmationModal = () => (
-    <Modal
-      animationType="fade"
-      transparent={true}
-      visible={showDeleteModal}
-      onRequestClose={() => setShowDeleteModal(false)}
-    >
-      <View style={styles.modalOverlay}>
-        <View style={styles.modalContainer}>
-          <Text style={styles.modalTitle}>Delete Article</Text>
-          <Text style={styles.modalText}>Are you sure you want to delete this article?</Text>
-          <View style={styles.modalButtonContainer}>
-            <TouchableOpacity 
-              style={[styles.modalButton, styles.cancelModalButton]} 
-              onPress={() => setShowDeleteModal(false)}
-            >
-              <Text style={styles.modalButtonText}>Cancel</Text>
-            </TouchableOpacity>
-            <TouchableOpacity 
-              style={[styles.modalButton, styles.confirmModalButton]} 
-              onPress={handleDeleteArticle}
-            >
-              <Text style={styles.modalButtonText}>Delete</Text>
-            </TouchableOpacity>
+    return (
+      <View style={styles.videoSection}>
+        <Text style={styles.videoSectionTitle}>📺 Featured Video</Text>
+
+        <TouchableOpacity
+          style={styles.videoThumbnailContainer}
+          onPress={() => openVideo(article.videoUrl)}
+          activeOpacity={0.8}
+        >
+          {thumbnailUrl && (
+            <View style={styles.videoThumbnail}>
+              <View style={styles.videoThumbnailOverlay}>
+                <View style={styles.playButton}>
+                  <Text style={styles.playButtonText}>▶</Text>
+                </View>
+              </View>
+            </View>
+          )}
+
+          <View style={styles.videoInfo}>
+            <Text style={styles.videoTitle}>Watch Video</Text>
+            <Text style={styles.videoSubtitle}>Tap to open in your video app</Text>
           </View>
-        </View>
-      </View>
-    </Modal>
-  );
+        </TouchableOpacity>
 
-  const SaveConfirmationModal = () => (
-    <Modal
-      animationType="fade"
-      transparent={true}
-      visible={showSaveModal}
-      onRequestClose={() => setShowSaveModal(false)}
-    >
-      <View style={styles.modalOverlay}>
-        <View style={styles.modalContainer}>
-          <Text style={styles.modalTitle}>Save Changes</Text>
-          <Text style={styles.modalText}>Are you sure you want to save these changes?</Text>
-          <View style={styles.modalButtonContainer}>
-            <TouchableOpacity 
-              style={[styles.modalButton, styles.cancelModalButton]} 
-              onPress={() => setShowSaveModal(false)}
-            >
-              <Text style={styles.modalButtonText}>Cancel</Text>
-            </TouchableOpacity>
-            <TouchableOpacity 
-              style={[styles.modalButton, styles.confirmModalButton]} 
-              onPress={handleSaveChanges}
-            >
-              <Text style={styles.modalButtonText}>Save</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
+        <Text style={styles.videoDescription}>
+          Tap above to watch the video for additional insights on this topic.
+        </Text>
       </View>
-    </Modal>
-  );
+    );
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -122,95 +100,55 @@ export const ArticleDetailScreen = ({ route }: any) => {
       </View>
 
       <View style={styles.mainContainer}>
-        <ScrollView 
+        <ScrollView
           style={styles.scrollContainer}
           contentContainerStyle={styles.contentContainer}
+          showsVerticalScrollIndicator={false}
         >
-          {isEditing && isUserArticle ? (
-            <>
-              <TextInput
-                style={styles.editTitleInput}
-                value={editedTitle}
-                onChangeText={setEditedTitle}
-                placeholder="Article title"
-              />
-              <View style={styles.metaContainer}>
-                <Text style={styles.author}>By {article.author}</Text>
-                <Text style={styles.date}>{formatDate(article.date)}</Text>
+          <Text style={styles.title}>{article.title}</Text>
+
+          <View style={styles.metaContainer}>
+            <Text style={styles.author}>By {article.author}</Text>
+            <Text style={styles.date}>{formatDate(article.date)}</Text>
+          </View>
+
+          <VideoSection />
+
+          <View style={styles.contentSection}>
+            <Text style={styles.contentSectionTitle}>📝 Article Content</Text>
+            <Text style={styles.content}>{article.content}</Text>
+          </View>
+
+          <View style={styles.additionalInfoSection}>
+            <Text style={styles.additionalInfoTitle}>About this Article</Text>
+            <View style={styles.infoRow}>
+              <Text style={styles.infoLabel}>Published:</Text>
+              <Text style={styles.infoValue}>{formatDate(article.date)}</Text>
+            </View>
+            <View style={styles.infoRow}>
+              <Text style={styles.infoLabel}>Author:</Text>
+              <Text style={styles.infoValue}>{article.author}</Text>
+            </View>
+            {article.videoUrl && (
+              <View style={styles.infoRow}>
+                <Text style={styles.infoLabel}>Video:</Text>
+                <Text style={styles.infoValue}>Available</Text>
               </View>
-              <TextInput
-                style={styles.editContentInput}
-                value={editedContent}
-                onChangeText={setEditedContent}
-                placeholder="Article content"
-                multiline
-              />
-            </>
-          ) : (
-            <>
-              <Text style={styles.title}>{article.title}</Text>
-              <View style={styles.metaContainer}>
-                <Text style={styles.author}>By {article.author}</Text>
-                <Text style={styles.date}>{formatDate(article.date)}</Text>
-              </View>
-              <Text style={styles.content}>{article.content}</Text>
-            </>
-          )}
+            )}
+          </View>
+
           <View style={styles.spacer} />
         </ScrollView>
-        
+
         <View style={styles.bottomButtonContainer}>
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.bottomBackButton}
             onPress={() => navigation.goBack()}
           >
             <Text style={styles.bottomBackButtonText}>Return to Articles</Text>
           </TouchableOpacity>
-          
-          {isUserArticle && (
-            <View style={styles.userActionButtonsContainer}>
-              {isEditing ? (
-                <>
-                  <TouchableOpacity 
-                    style={[styles.actionButton, styles.cancelButton]}
-                    onPress={() => {
-                      setEditedTitle(article.title);
-                      setEditedContent(article.content);
-                      setIsEditing(false);
-                    }}
-                  >
-                    <Text style={styles.actionButtonText}>Cancel</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity 
-                    style={[styles.actionButton, styles.saveButton]}
-                    onPress={() => setShowSaveModal(true)}
-                  >
-                    <Text style={styles.actionButtonText}>Save Changes</Text>
-                  </TouchableOpacity>
-                </>
-              ) : (
-                <>
-                  <TouchableOpacity 
-                    style={[styles.actionButton, styles.editButton]}
-                    onPress={() => setIsEditing(true)}
-                  >
-                    <Text style={styles.actionButtonText}>Edit</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity 
-                    style={[styles.actionButton, styles.deleteButton]}
-                    onPress={() => setShowDeleteModal(true)}
-                  >
-                    <Text style={styles.actionButtonText}>Delete</Text>
-                  </TouchableOpacity>
-                </>
-              )}
-            </View>
-          )}
         </View>
       </View>
-      
-      <DeleteConfirmationModal />
-      <SaveConfirmationModal />
     </SafeAreaView>
   );
 };

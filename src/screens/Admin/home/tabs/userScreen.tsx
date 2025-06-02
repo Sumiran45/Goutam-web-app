@@ -60,20 +60,20 @@ export default function UsersScreen({ navigation }: any) {
 
   // Fetch users data
   useEffect(() => {
-  
-       getUsers();
+
+    getUsers();
   }, []);
   const getUsers = async () => {
     try {
       const users = await fetchUsers();
-        setUsers(users);
-        setFilteredUsers(users);
-        setIsLoading(false);
+      console.log("🚀 ~ getUsers ~ users:", users);
+      setUsers(users);
+      setFilteredUsers(users);
+      setIsLoading(false);
     } catch (error) {
       console.error('Failed to fetch user count:', error);
     }
   };
-  // Filter users based on search query
   useEffect(() => {
     if (searchQuery.trim() === '') {
       setFilteredUsers(users);
@@ -87,16 +87,6 @@ export default function UsersScreen({ navigation }: any) {
     }
   }, [searchQuery, users]);
 
-  // const fetchUsers = () => {
-  //   setIsLoading(true);
-  //   // Simulating API call
-  //   setTimeout(() => {
-  //     setUsers(MOCK_USERS);
-  //     setFilteredUsers(MOCK_USERS);
-  //     setIsLoading(false);
-  //   }, 1000);
-  // };
-
   const handleRefresh = () => {
     setIsRefreshing(true);
     getUsers();
@@ -108,28 +98,16 @@ export default function UsersScreen({ navigation }: any) {
     setDetailsModalVisible(true);
   };
 
-  // const handleDeleteUser = () => {
-  //   if (!selectedUser) return;
-  //   // In a real app, you would make an API call to delete the user
-  //   const updatedUsers = users.filter(user => user.id !== selectedUser.id);
-  //   setUsers(updatedUsers);
-  //   setFilteredUsers(updatedUsers);
-  //   Alert.alert('Success', `User ${selectedUser.name} has been deleted`);
-  //   setConfirmModalVisible(false);
-  //   setDetailsModalVisible(false);
-  // };
-
   const handleDeleteUser = async () => {
     if (!selectedUser) return;
-  
+
     try {
-      await deleteUser(selectedUser.id); // call API to delete user
-  
-      // update state after successful deletion
+      await deleteUser(selectedUser.id);
+
       const updatedUsers = users.filter(user => user.id !== selectedUser.id);
       setUsers(updatedUsers);
       setFilteredUsers(updatedUsers);
-  
+
       Alert.alert('Success', `User ${selectedUser.name} has been deleted`);
     } catch (error) {
       Alert.alert('Error', 'Failed to delete user. Please try again.');
@@ -234,17 +212,17 @@ export default function UsersScreen({ navigation }: any) {
       <View style={styles.userCardBody}>
         <View style={styles.statsItem}>
           <Icon name="file-alt" size={moderateScale(14)} color={colors.primary} />
-          <Text style={styles.statsValue}>{item.articles}</Text>
+          <Text style={styles.statsValue}>{0}</Text>
           <Text style={styles.statsLabel}>Articles</Text>
         </View>
         <View style={styles.statsItem}>
           <Icon name="shopping-cart" size={moderateScale(14)} color={colors.accent} />
-          <Text style={styles.statsValue}>{item.purchases}</Text>
+          <Text style={styles.statsValue}>{0}</Text>
           <Text style={styles.statsLabel}>Purchases</Text>
         </View>
         <View style={styles.statsItem}>
           <Icon name="user-tag" size={moderateScale(14)} color={colors.info} />
-          <Text style={styles.statsValue}>{item.role}</Text>
+          <Text style={styles.statsValue}>{"User"}</Text>
           <Text style={styles.statsLabel}>Role</Text>
         </View>
       </View>
@@ -294,12 +272,12 @@ export default function UsersScreen({ navigation }: any) {
                 <View style={styles.statsRow}>
                   <View style={styles.statCard}>
                     <Icon name="file-alt" size={moderateScale(24)} color={colors.primary} />
-                    <Text style={styles.statValue}>{selectedUser.articles}</Text>
+                    <Text style={styles.statValue}>{0}</Text>
                     <Text style={styles.statLabel}>Articles</Text>
                   </View>
                   <View style={styles.statCard}>
                     <Icon name="shopping-cart" size={moderateScale(24)} color={colors.accent} />
-                    <Text style={styles.statValue}>{selectedUser.purchases}</Text>
+                    <Text style={styles.statValue}>{0}</Text>
                     <Text style={styles.statLabel}>Purchases</Text>
                   </View>
                 </View>
@@ -366,15 +344,15 @@ export default function UsersScreen({ navigation }: any) {
             {actionType === 'delete'
               ? 'Delete User'
               : selectedUser?.status === 'active'
-              ? 'Deactivate User'
-              : 'Activate User'}
+                ? 'Deactivate User'
+                : 'Activate User'}
           </Text>
           <Text style={styles.confirmText}>
             {actionType === 'delete'
               ? `Are you sure you want to delete ${selectedUser?.name}? This action cannot be undone.`
               : selectedUser?.status === 'active'
-              ? `Are you sure you want to deactivate ${selectedUser?.name}? They will not be able to login.`
-              : `Are you sure you want to activate ${selectedUser?.name}? They will be able to login again.`}
+                ? `Are you sure you want to deactivate ${selectedUser?.name}? They will not be able to login.`
+                : `Are you sure you want to activate ${selectedUser?.name}? They will be able to login again.`}
           </Text>
           <View style={styles.confirmButtons}>
             <TouchableOpacity
@@ -391,8 +369,8 @@ export default function UsersScreen({ navigation }: any) {
                     actionType === 'delete'
                       ? colors.danger
                       : selectedUser?.status === 'active'
-                      ? colors.warning
-                      : colors.success,
+                        ? colors.warning
+                        : colors.success,
                 },
               ]}
               onPress={actionType === 'delete' ? handleDeleteUser : handleToggleUserStatus}
@@ -401,8 +379,8 @@ export default function UsersScreen({ navigation }: any) {
                 {actionType === 'delete'
                   ? 'Delete'
                   : selectedUser?.status === 'active'
-                  ? 'Deactivate'
-                  : 'Activate'}
+                    ? 'Deactivate'
+                    : 'Activate'}
               </Text>
             </TouchableOpacity>
           </View>

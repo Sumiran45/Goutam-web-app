@@ -1,21 +1,28 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
-  Image,
-  StyleSheet,
   ScrollView,
+  Image,
   TouchableOpacity,
   SafeAreaView,
   StatusBar,
+  Linking,
+  Alert,
   Dimensions,
-  ActivityIndicator,
-  Platform
 } from 'react-native';
-import { RouteProp } from '@react-navigation/native';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
+import { StackNavigationProp } from '@react-navigation/stack';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-import { useCart } from '../../../Context/CartContext';
+
+const { width } = Dimensions.get('window');
+
+type RootStackParamList = {
+  Shop: undefined;
+  ProductDetail: { product: Product };
+};
+
+type ProductDetailNavigationProp = StackNavigationProp<RootStackParamList, 'ProductDetail'>;
 
 interface Product {
   id: string;
@@ -23,272 +30,262 @@ interface Product {
   price: number;
   image: string;
   description?: string;
-}
-
-type RootStackParamList = {
-  ProductDetail: { product: Product };
-};
-
-type ProductDetailRouteProp = RouteProp<RootStackParamList, 'ProductDetail'>;
-
-interface Props {
-  route: ProductDetailRouteProp;
-}
-
-const { width } = Dimensions.get('window');
-
-const ProductDetail: React.FC<Props> = ({ route }) => {
-  const { product } = route.params;
-  const navigation = useNavigation();
-  const { addToCart } = useCart();
-  const [loading, setLoading] = React.useState<boolean>(false);
-  
-  const handleAddToCart = () => {
-    setLoading(true);
-    setTimeout(() => {
-      addToCart(product);
-      setLoading(false);
-    }, 300);
+  category: string;
+  brand: string;
+  vendorLinks: {
+    amazon?: string;
+    flipkart?: string;
+    nykaa?: string;
   };
-  
+  rating: number;
+  isOrganic?: boolean;
+}
+
+interface RouteParams {
+  product: Product;
+}
+
+const ProductDetailScreen = () => {
+  const navigation = useNavigation<ProductDetailNavigationProp>();
+  const route = useRoute();
+  const { product } = route.params as RouteParams;
+
+  const openVendorLink = (url: string, vendor: string) => {
+    Linking.openURL(url).catch(() =>
+      Alert.alert('Error', 'Unable to open the link')
+    );
+  };
+
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <StatusBar backgroundColor="#3498DB" barStyle="light-content" />
-      
+    <SafeAreaView style={styles.container}>
+      <StatusBar backgroundColor="#3498db" barStyle="light-content" />
+
+      {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity 
-          style={styles.backButton}
-          onPress={() => navigation.goBack()}
-        >
-          <Icon name="arrow-back" size={24} color="#333" />
-        </TouchableOpacity>
         <Text style={styles.headerTitle}>Product Details</Text>
-        <View style={styles.placeholder} />
+        <View style={styles.spacer} />
       </View>
-      
-      <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+
+      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+        {/* Product Image */}
         <View style={styles.imageContainer}>
-          <Image 
-            source={{ uri: product.image }} 
-            style={styles.image} 
-            resizeMode="cover"
-          />
-        </View>
-        
-        <View style={styles.infoContainer}>
-          <Text style={styles.category}>Menstrual Care</Text>
-          <Text style={styles.title}>{product.name}</Text>
-          <Text style={styles.price}>₹{product.price}</Text>
-          
-          <View style={styles.divider} />
-          
-          <Text style={styles.sectionTitle}>Description</Text>
-          <Text style={styles.description}>
-            {product.description || 'No description available for this product.'}
-          </Text>
-          
-          <View style={styles.featuresContainer}>
-            <Text style={styles.sectionTitle}>Features</Text>
-            <View style={styles.featureRow}>
-              <View style={styles.featureItem}>
-                <Icon name="check-circle" size={20} color="#4caf50" />
-                <Text style={styles.featureText}>High Quality</Text>
-              </View>
-              <View style={styles.featureItem}>
-                <Icon name="eco" size={20} color="#4caf50" />
-                <Text style={styles.featureText}>Eco-Friendly</Text>
-              </View>
+          <Image source={{ uri: product.image }} style={styles.productImage} />
+          {product.isOrganic && (
+            <View style={styles.organicBadge}>
+              <Text style={styles.organicBadgeText}>ORGANIC</Text>
             </View>
-            <View style={styles.featureRow}>
-              <View style={styles.featureItem}>
-                <Icon name="local-shipping" size={20} color="#4caf50" />
-                <Text style={styles.featureText}>Fast Delivery</Text>
-              </View>
-              <View style={styles.featureItem}>
-                <Icon name="verified-user" size={20} color="#4caf50" />
-                <Text style={styles.featureText}>Certified</Text>
-              </View>
+          )}
+          <View style={styles.ratingContainer}>
+            <Icon name="star" size={16} color="#FFD700" />
+            <Text style={styles.ratingText}>{product.rating}</Text>
+          </View>
+        </View>
+
+        {/* Product Info */}
+        <View style={styles.productInfo}>
+          <Text style={styles.brandText}>{product.brand}</Text>
+          <Text style={styles.productName}>{product.name}</Text>
+          <Text style={styles.category}>{product.category}</Text>
+          <Text style={styles.price}>₹{product.price}</Text>
+
+          {product.description && (
+            <View style={styles.descriptionContainer}>
+              <Text style={styles.descriptionTitle}>Description</Text>
+              <Text style={styles.description}>{product.description}</Text>
+            </View>
+          )}
+
+          {/* Vendor Links */}
+          <View style={styles.vendorSection}>
+            <Text style={styles.vendorTitle}>Buy from:</Text>
+            <View style={styles.vendorButtons}>
+              {product.vendorLinks.amazon && (
+                <TouchableOpacity
+                  style={[styles.vendorButton, styles.amazonButton]}
+                  onPress={() => openVendorLink(product.vendorLinks.amazon!, 'Amazon')}
+                >
+                  <Text style={styles.vendorButtonText}>Buy on Amazon</Text>
+                </TouchableOpacity>
+              )}
+              {product.vendorLinks.flipkart && (
+                <TouchableOpacity
+                  style={[styles.vendorButton, styles.flipkartButton]}
+                  onPress={() => openVendorLink(product.vendorLinks.flipkart!, 'Flipkart')}
+                >
+                  <Text style={styles.vendorButtonText}>Buy on Flipkart</Text>
+                </TouchableOpacity>
+              )}
+              {product.vendorLinks.nykaa && (
+                <TouchableOpacity
+                  style={[styles.vendorButton, styles.nykaaButton]}
+                  onPress={() => openVendorLink(product.vendorLinks.nykaa!, 'Nykaa')}
+                >
+                  <Text style={styles.vendorButtonText}>Buy on Nykaa</Text>
+                </TouchableOpacity>
+              )}
+              <TouchableOpacity
+                style={[styles.vendorButton, styles.flipkartButton]}
+                onPress={() => navigation.goBack()}
+              >
+                <Text style={styles.vendorButtonText}>Return to shop</Text>
+              </TouchableOpacity>
             </View>
           </View>
         </View>
       </ScrollView>
-      
-      <View style={styles.footer}>
-        <View style={styles.priceContainer}>
-          <Text style={styles.footerPriceLabel}>Price</Text>
-          <Text style={styles.footerPrice}>₹{product.price}</Text>
-        </View>
-        <TouchableOpacity 
-          style={styles.addToCartButton}
-          onPress={handleAddToCart}
-          activeOpacity={0.8}
-          disabled={loading}
-        >
-          {loading ? (
-            <ActivityIndicator size="small" color="#fff" />
-          ) : (
-            <>
-              <Icon name="shopping-cart" size={20} color="#fff" style={styles.buttonIcon} />
-              <Text style={styles.addToCartText}>Add to Cart</Text>
-            </>
-          )}
-        </TouchableOpacity>
-      </View>
     </SafeAreaView>
   );
 };
 
-const styles = StyleSheet.create({
-  safeArea: {
+const styles = {
+  container: {
     flex: 1,
-    backgroundColor: '#f8f8f8',
-    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0
+    backgroundColor: '#fafafa',
   },
   header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: '#fff',
+    // flexDirection: 'row' as const,
+    // justifyContent: 'space-between' as const,
+    alignItems: 'center' as const,
+    backgroundColor: '#3498db',
     paddingHorizontal: 16,
-    paddingVertical: 12,
-    elevation: 2,
+    paddingVertical: 16,
+    elevation: 4,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
-    shadowRadius: 2,
+    shadowRadius: 4,
+  },
+  backButton: {
+    padding: 4,
   },
   headerTitle: {
     fontSize: 18,
-    fontWeight: 'bold',
-    color: '#333',
+    fontWeight: 'bold' as const,
+    color: '#fff',
   },
-  backButton: {
-    padding: 8,
+  spacer: {
+    width: 32, // Same width as the back button to center the title
   },
-  placeholder: {
-    width: 40,
-  },
-  container: {
+  content: {
     flex: 1,
   },
   imageContainer: {
     width: width,
-    height: width * 0.8,
-    backgroundColor: '#f5f5f5',
+    height: 300,
+    backgroundColor: '#f8f8f8',
+    position: 'relative' as const,
   },
-  image: {
+  productImage: {
     width: '100%',
     height: '100%',
+    resizeMode: 'cover' as const,
   },
-  infoContainer: {
+  organicBadge: {
+    position: 'absolute' as const,
+    top: 16,
+    left: 16,
+    backgroundColor: '#4CAF50',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+  },
+  organicBadgeText: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: 'bold' as const,
+  },
+  ratingContainer: {
+    position: 'absolute' as const,
+    top: 16,
+    right: 16,
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 16,
+  },
+  ratingText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '600' as const,
+    marginLeft: 4,
+  },
+  productInfo: {
+    padding: 20,
     backgroundColor: '#fff',
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    marginTop: -20,
-    padding: 24,
-    paddingBottom: 100,
+  },
+  brandText: {
+    fontSize: 14,
+    color: '#3498db',
+    fontWeight: '600' as const,
+    textTransform: 'uppercase' as const,
+    marginBottom: 4,
+  },
+  productName: {
+    fontSize: 24,
+    fontWeight: 'bold' as const,
+    color: '#333',
+    marginBottom: 8,
+    lineHeight: 30,
   },
   category: {
     fontSize: 14,
-    color: '#3498db',
-    fontWeight: '500',
-    marginBottom: 6,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 8,
+    color: '#666',
+    marginBottom: 12,
   },
   price: {
-    fontSize: 22,
-    fontWeight: 'bold',
+    fontSize: 28,
+    fontWeight: 'bold' as const,
     color: '#3498db',
-    marginBottom: 12,
+    marginBottom: 20,
   },
-  divider: {
-    height: 1,
-    backgroundColor: '#f0f0f0',
-    marginVertical: 16,
+  descriptionContainer: {
+    marginBottom: 24,
   },
-  sectionTitle: {
+  descriptionTitle: {
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: '600' as const,
     color: '#333',
-    marginBottom: 12,
+    marginBottom: 8,
   },
   description: {
     fontSize: 16,
     color: '#666',
     lineHeight: 24,
-    marginBottom: 24,
   },
-  featuresContainer: {
-    marginTop: 8,
+  vendorSection: {
+    marginBottom: 20,
   },
-  featureRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 16,
-  },
-  featureItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    width: '45%',
-  },
-  featureText: {
-    marginLeft: 8,
-    fontSize: 14,
-    color: '#666',
-  },
-  footer: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    backgroundColor: '#fff',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 24,
-    paddingVertical: 16,
-    borderTopWidth: 1,
-    borderTopColor: '#f0f0f0',
-    elevation: 10,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: -3 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-  },
-  priceContainer: {
-    flex: 1,
-  },
-  footerPriceLabel: {
-    fontSize: 12,
-    color: '#888',
-  },
-  footerPrice: {
+  vendorTitle: {
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: '600' as const,
     color: '#333',
+    marginBottom: 12,
   },
-  addToCartButton: {
-    flexDirection: 'row',
-    backgroundColor: '#3498db',
-    paddingHorizontal: 24,
+  vendorButtons: {
+    gap: 8,
+  },
+  vendorButton: {
     paddingVertical: 12,
+    paddingHorizontal: 16,
     borderRadius: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: 'center' as const,
   },
-  buttonIcon: {
-    marginRight: 8,
+  amazonButton: {
+    backgroundColor: '#FF9800',
   },
-  addToCartText: {
+  flipkartButton: {
+    backgroundColor: '#2874F0',
+  },
+  nykaaButton: {
+    backgroundColor: '#EC407A',
+  },
+  vendorButtonText: {
     color: '#fff',
-    fontWeight: '600',
     fontSize: 16,
+    fontWeight: '600' as const,
   },
-});
+};
 
-export default ProductDetail;
+export default ProductDetailScreen;

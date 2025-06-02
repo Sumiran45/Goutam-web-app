@@ -2,7 +2,7 @@ import { useState } from 'react';
 import api from '../Api/api';
 import { Alert } from 'react-native';
 
-export const useRegister = (navigation: any,setIsLoading:any) => {
+export const useRegister = (navigation: any, setIsLoading: any) => {
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -33,8 +33,10 @@ export const useRegister = (navigation: any,setIsLoading:any) => {
   };
 
   const handleRegister = async () => {
-    setIsLoading(true);
-    if (!validate()) return;
+    if (!validate()) {
+      setIsLoading(false);
+      return { success: false };
+    }
 
     try {
       const res = await api.post('/register', {
@@ -45,13 +47,15 @@ export const useRegister = (navigation: any,setIsLoading:any) => {
 
       if (res.status === 200 || res.status === 201) {
         Alert.alert('Success', 'Account created successfully');
-        navigation.navigate('Login');
+        // Return success instead of navigating to Login
+        return { success: true };
+      } else {
+        return { success: false };
       }
     } catch (err: any) {
       const message = err.response?.data?.detail || 'Registration failed';
       Alert.alert('Error', message);
-    } finally {
-      setIsLoading(false)
+      return { success: false };
     }
   };
 

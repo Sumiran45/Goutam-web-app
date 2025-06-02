@@ -19,5 +19,7 @@ export type RootStackParamList = {
     UserDetails:undefined;
     ArticleDetails : undefined;
     ArticleDetail: { article: any };
+    DoctorDetail: undefined;
+    BookAppointment: undefined;
   };
   

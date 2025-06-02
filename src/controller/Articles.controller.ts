@@ -48,10 +48,6 @@ export const addArticle = async (title: string, content: string): Promise<Articl
   };
 };
 
-
-
-
-
 export const updateArticle = async (
   article_id: string,
   title: string,

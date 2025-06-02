@@ -1,41 +1,49 @@
 import { StyleSheet, Dimensions } from 'react-native';
 
-const { width } = Dimensions.get('window');
+const { width, height } = Dimensions.get('window');
 
 export const styles = StyleSheet.create({
+  // Main Container Styles
   container: {
     flex: 1,
-    backgroundColor: '#f9f9f9',
+    backgroundColor: '#f8f9fa',
   },
+  
+  // Header Styles
   header: {
     backgroundColor: '#3498db',
-    padding: 15,
-    flexDirection: 'row',
+    paddingVertical: 16,
+    paddingHorizontal: 20,
+    // flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
+    // justifyContent: 'space-between',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 3,
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    elevation: 4,
   },
   headerTitle: {
     color: '#ffffff',
     fontSize: 18,
-    fontWeight: 'bold',
-    letterSpacing: 1.2,
+    fontWeight: '700',
+    letterSpacing: 1.5,
   },
   backButton: {
-    padding: 5,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 6,
   },
   backButtonText: {
     color: '#ffffff',
     fontSize: 16,
-    fontWeight: '500',
+    fontWeight: '600',
   },
   placeholder: {
-    width: 50, 
+    width: 60,
   },
+
+  // Main Content Container
   mainContainer: {
     flex: 1,
     display: 'flex',
@@ -45,165 +53,214 @@ export const styles = StyleSheet.create({
     flex: 1,
   },
   contentContainer: {
-    padding: width > 320 ? 20 : 15,
-    paddingBottom: 30,
+    padding: 20,
+    paddingBottom: 40,
   },
+
+  // Article Header Styles
   title: {
-    fontSize: width > 375 ? 24 : 22, 
-    fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 10,
-    lineHeight: width > 375 ? 32 : 28,
+    fontSize: width > 375 ? 26 : 24,
+    fontWeight: '800',
+    color: '#1a1a1a',
+    marginBottom: 12,
+    lineHeight: width > 375 ? 34 : 32,
   },
   metaContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 20,
+    alignItems: 'center',
+    marginBottom: 24,
+    paddingBottom: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
-    paddingBottom: 15,
+    borderBottomColor: '#e9ecef',
   },
   author: {
     fontSize: 14,
-    color: '#666',
+    color: '#6c757d',
+    fontWeight: '500',
   },
   date: {
     fontSize: 14,
-    color: '#3498db',
+    color: '#007bff',
+    fontWeight: '600',
   },
-  content: {
-    fontSize: width > 320 ? 16 : 15,
-    color: '#444',
-    lineHeight: width > 320 ? 24 : 22,
-  },
-  spacer: {
-    height: 20,
-  },
-  bottomButtonContainer: {
-    padding: width > 320 ? 15 : 10, 
-    borderTopWidth: 1,
-    borderTopColor: '#e0e0e0',
+
+  // Video Section Styles
+  videoSection: {
+    marginBottom: 32,
     backgroundColor: '#ffffff',
+    borderRadius: 12,
+    padding: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 3,
   },
-  bottomBackButton: {
-    backgroundColor: '#3498db',
-    borderRadius: 8,
-    padding: 12,
-    alignItems: 'center',
-    marginBottom: 10,
+  videoSectionTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#3498db',
+    marginBottom: 16,
+    textAlign: 'center',
   },
-  bottomBackButtonText: {
-    color: '#ffffff',
-    fontWeight: 'bold',
-    fontSize: 16,
-  },
-  userActionButtonsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: 10,
-  },
-  actionButton: {
-    flex: 1,
-    borderRadius: 8,
-    padding: 12,
-    alignItems: 'center',
-    marginHorizontal: 5,
-  },
-  editButton: {
-    backgroundColor: '#f39c12',
-  },
-  saveButton: {
-    backgroundColor: '#2ecc71',
-  },
-  deleteButton: {
-    backgroundColor: '#e74c3c',
-  },
-  cancelButton: {
-    backgroundColor: '#95a5a6',
-  },
-  actionButtonText: {
-    color: '#ffffff',
-    fontWeight: 'bold',
-    fontSize: width > 320 ? 16 : 14,
-  },
-  editTitleInput: {
-    fontSize: width > 375 ? 20 : 18, 
-    fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 10,
-    padding: 10,
-    backgroundColor: '#f0f0f0',
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#ddd',
-  },
-  editContentInput: {
-    fontSize: width > 320 ? 16 : 15, 
-    color: '#444',
-    lineHeight: width > 320 ? 24 : 22,
-    padding: 10,
-    backgroundColor: '#f0f0f0',
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#ddd',
+  videoThumbnailContainer: {
+    backgroundColor: '#000',
+    borderRadius: 12,
+    overflow: 'hidden',
+    marginBottom: 12,
     minHeight: 200,
-    textAlignVertical: 'top',
-  },
-  // Modal styles
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
     justifyContent: 'center',
     alignItems: 'center',
   },
-  modalContainer: {
-    width: width * 0.85, 
-    backgroundColor: 'white',
-    borderRadius: 10,
-    padding: 20,
+  videoThumbnail: {
+    width: '100%',
+    aspectRatio: 16/9,
+    backgroundColor: '#1a1a1a',
+    justifyContent: 'center',
+    alignItems: 'center',
+    position: 'relative',
+  },
+  videoThumbnailOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.3)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  playButton: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: '#007bff',
+    justifyContent: 'center',
     alignItems: 'center',
     shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 6,
   },
-  modalTitle: {
-    fontSize: 18,
+  playButtonText: {
+    color: '#ffffff',
+    fontSize: 24,
     fontWeight: 'bold',
-    marginBottom: 15,
-    color: '#333',
+    marginLeft: 3, // Slight offset to center the play icon visually
   },
-  modalText: {
-    fontSize: 16,
-    marginBottom: 20,
-    textAlign: 'center',
-    color: '#555',
-  },
-  modalButtonContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    width: '100%',
-  },
-  modalButton: {
-    flex: 1,
-    padding: 10,
-    borderRadius: 5,
-    marginHorizontal: 5,
+  videoInfo: {
+    padding: 16,
     alignItems: 'center',
   },
-  cancelModalButton: {
-    backgroundColor: '#95a5a6',
-  },
-  confirmModalButton: {
-    backgroundColor: '#e74c3c',
-  },
-  modalButtonText: {
-    color: 'white',
-    fontWeight: 'bold',
+  videoTitle: {
     fontSize: 16,
+    fontWeight: '600',
+    color: '#ffffff',
+    marginBottom: 4,
+  },
+  videoSubtitle: {
+    fontSize: 14,
+    color: '#cccccc',
+    textAlign: 'center',
+  },
+  videoDescription: {
+    fontSize: 14,
+    color: '#6c757d',
+    textAlign: 'center',
+    fontStyle: 'italic',
+  },
+
+  // Content Section Styles
+  contentSection: {
+    marginBottom: 32,
+    backgroundColor: '#ffffff',
+    borderRadius: 12,
+    padding: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 3,
+  },
+  contentSectionTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#3498db',
+    marginBottom: 16,
+  },
+  content: {
+    fontSize: 16,
+    color: '#495057',
+    lineHeight: 26,
+    fontWeight: '400',
+  },
+
+  // Additional Info Section Styles
+  additionalInfoSection: {
+    backgroundColor: '#ffffff',
+    borderRadius: 12,
+    padding: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 3,
+  },
+  additionalInfoTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#3498db',
+    marginBottom: 16,
+  },
+  infoRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f8f9fa',
+  },
+  infoLabel: {
+    fontSize: 14,
+    color: '#6c757d',
+    fontWeight: '600',
+  },
+  infoValue: {
+    fontSize: 14,
+    color: '#495057',
+    fontWeight: '500',
+  },
+
+  // Bottom Button Styles
+  bottomButtonContainer: {
+    padding: 20,
+    borderTopWidth: 1,
+    borderTopColor: '#e9ecef',
+    backgroundColor: '#ffffff',
+  },
+  bottomBackButton: {
+    backgroundColor: '#007bff',
+    borderRadius: 12,
+    paddingVertical: 16,
+    paddingHorizontal: 24,
+    alignItems: 'center',
+    shadowColor: '#007bff',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  bottomBackButtonText: {
+    color: '#ffffff',
+    fontWeight: '700',
+    fontSize: 16,
+    letterSpacing: 0.5,
+  },
+
+  // Utility Styles
+  spacer: {
+    height: 24,
   },
 });

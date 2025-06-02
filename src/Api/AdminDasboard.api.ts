@@ -4,7 +4,7 @@ import api from './api'; // axios instance
 
 export const fetchUsers = async () => {
   try {
-    const token = await AsyncStorage.getItem('token'); // await here
+    const token = await AsyncStorage.getItem('token'); 
 
     if (!token) {
       throw new Error('No token found');
@@ -17,7 +17,7 @@ export const fetchUsers = async () => {
       },
     });
 
-    return response.data; // axios response has `data` directly
+    return response.data; 
   } catch (error) {
     console.error('Error fetching users:', error);
     throw error;
