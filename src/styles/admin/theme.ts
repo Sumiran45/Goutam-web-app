@@ -27,10 +27,12 @@ export const colors = {
     primary: '#f6f8fa',
     secondary: '#fff',
     overlay: 'rgba(0, 0, 0, 0.5)',
+    
   },
    border: {
     light: '#eee',
     medium: '#f0f0f0',
+     input: '#e0e0e0',
   },
 };
 

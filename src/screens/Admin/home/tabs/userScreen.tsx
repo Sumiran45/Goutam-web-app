@@ -10,39 +10,24 @@ import {
   Modal,
   TextInput,
   Alert,
-  Dimensions,
   RefreshControl,
   Image,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome5';
 import { colors, moderateScale } from '../../../../styles/admin/theme';
-import { styles } from '../../../../styles/admin/userScreen.style';
 import { deleteUser, fetchUsers } from '../../../../Api/AdminDasboard.api';
-
-
-// Mocked data - would be replaced with API calls in production
-const MOCK_USERS = Array(15).fill(null).map((_, index) => ({
-  id: `user-${index + 1}`,
-  name: `User ${index + 1}`,
-  email: `user${index + 1}@example.com`,
-  avatar: `https://randomuser.me/api/portraits/${index % 2 === 0 ? 'men' : 'women'}/${index + 1}.jpg`,
-  joinDate: new Date(2024, 0, index + 1).toLocaleDateString(),
-  articles: Math.floor(Math.random() * 20),
-  purchases: Math.floor(Math.random() * 15),
-  status: index % 7 === 0 ? 'inactive' : 'active',
-  role: index % 10 === 0 ? 'admin' : 'user',
-}));
+import { styles } from '../../../../styles/admin/userScreen.style'
 
 interface User {
   id: string;
   name: string;
   email: string;
-  avatar: string;
+  avatar?: string;
   joinDate: string;
-  articles: number;
-  purchases: number;
   status: 'active' | 'inactive';
   role: 'admin' | 'user';
+  phone?: string;
+  lastLogin?: string;
 }
 
 export default function UsersScreen({ navigation }: any) {
@@ -55,41 +40,48 @@ export default function UsersScreen({ navigation }: any) {
   const [confirmModalVisible, setConfirmModalVisible] = useState(false);
   const [actionType, setActionType] = useState<'delete' | 'deactivate' | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
-  const [sortBy, setSortBy] = useState<'name' | 'articles' | 'purchases' | 'date' | 'status'>('name');
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
 
   // Fetch users data
   useEffect(() => {
-
     getUsers();
   }, []);
+
   const getUsers = async () => {
     try {
-      const users = await fetchUsers();
-      console.log("🚀 ~ getUsers ~ users:", users);
-      setUsers(users);
-      setFilteredUsers(users);
+      const fetchedUsers = await fetchUsers();
+      console.log("🚀 ~ getUsers ~ users:", fetchedUsers);
+      
+      // Add hardcoded name if not available
+      const usersWithNames = fetchedUsers.map((user: any, index: number) => ({
+        ...user,
+        name: user.name || `User ${String.fromCharCode(65 + (index % 26))}${String.fromCharCode(66 + (index % 25))}`
+      }));
+      
+      setUsers(usersWithNames);
+      setFilteredUsers(usersWithNames);
       setIsLoading(false);
     } catch (error) {
-      console.error('Failed to fetch user count:', error);
+      console.error('Failed to fetch users:', error);
+      setIsLoading(false);
     }
   };
+
   useEffect(() => {
     if (searchQuery.trim() === '') {
       setFilteredUsers(users);
     } else {
       const filtered = users.filter(
         user =>
-          user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          user.email.toLowerCase().includes(searchQuery.toLowerCase())
+          (user.name && user.name.toLowerCase().includes(searchQuery.toLowerCase())) ||
+          (user.email && user.email.toLowerCase().includes(searchQuery.toLowerCase()))
       );
       setFilteredUsers(filtered);
     }
   }, [searchQuery, users]);
 
-  const handleRefresh = () => {
+  const handleRefresh = async () => {
     setIsRefreshing(true);
-    getUsers();
+    await getUsers();
     setIsRefreshing(false);
   };
 
@@ -98,16 +90,23 @@ export default function UsersScreen({ navigation }: any) {
     setDetailsModalVisible(true);
   };
 
+  const getInitials = (name: string): string => {
+    if (!name) return 'AB';
+    const names = name.trim().split(' ');
+    if (names.length >= 2) {
+      return `${names[0][0]}${names[names.length - 1][0]}`.toUpperCase();
+    }
+    return name.substring(0, 2).toUpperCase();
+  };
+
   const handleDeleteUser = async () => {
     if (!selectedUser) return;
 
     try {
       await deleteUser(selectedUser.id);
-
       const updatedUsers = users.filter(user => user.id !== selectedUser.id);
       setUsers(updatedUsers);
       setFilteredUsers(updatedUsers);
-
       Alert.alert('Success', `User ${selectedUser.name} has been deleted`);
     } catch (error) {
       Alert.alert('Error', 'Failed to delete user. Please try again.');
@@ -116,8 +115,10 @@ export default function UsersScreen({ navigation }: any) {
       setDetailsModalVisible(false);
     }
   };
-  const handleToggleUserStatus = () => {
+
+  const handleToggleUserStatus = async () => {
     if (!selectedUser) return;
+
     const updatedUsers = users.map(user => {
       if (user.id === selectedUser.id) {
         const newStatus = user.status === 'active' ? 'inactive' : 'active';
@@ -125,6 +126,7 @@ export default function UsersScreen({ navigation }: any) {
       }
       return user;
     });
+
     setUsers(updatedUsers);
     setFilteredUsers(updatedUsers);
     Alert.alert(
@@ -140,90 +142,81 @@ export default function UsersScreen({ navigation }: any) {
     setConfirmModalVisible(true);
   };
 
-  const handleSort = (key: typeof sortBy) => {
-    let order: 'asc' | 'desc' = 'asc';
-    if (sortBy === key) {
-      order = sortOrder === 'asc' ? 'desc' : 'asc';
-      setSortOrder(order);
-    } else {
-      setSortBy(key);
-      setSortOrder('asc');
-      order = 'asc';
-    }
-
-    const sorted = [...filteredUsers].sort((a, b) => {
-      if (key === 'name') {
-        return order === 'asc' ? a.name.localeCompare(b.name) : b.name.localeCompare(a.name);
-      } else if (key === 'date') {
-        return order === 'asc'
-          ? new Date(a.joinDate).getTime() - new Date(b.joinDate).getTime()
-          : new Date(b.joinDate).getTime() - new Date(a.joinDate).getTime();
-      } else if (key === 'articles') {
-        return order === 'asc' ? a.articles - b.articles : b.articles - a.articles;
-      } else if (key === 'purchases') {
-        return order === 'asc' ? a.purchases - b.purchases : b.purchases - a.purchases;
-      } else if (key === 'status') {
-        return order === 'asc'
-          ? a.status.localeCompare(b.status)
-          : b.status.localeCompare(a.status);
-      }
-      return 0;
+  const formatDate = (dateString: string): string => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
     });
-
-    setFilteredUsers(sorted);
   };
 
-  const renderSortIcon = (key: typeof sortBy) => {
-    if (sortBy !== key) return null;
+  const renderProfileImage = (user: User) => {
+    if (user.avatar) {
+      return (
+        <Image
+          source={{ uri: user.avatar }}
+          style={styles.avatar}
+          onError={() => {
+            // Fallback to initials if image fails to load
+          }}
+        />
+      );
+    }
+
     return (
-      <Icon
-        name={sortOrder === 'asc' ? 'sort-up' : 'sort-down'}
-        size={moderateScale(12)}
-        color={colors.text.primary}
-        style={styles.sortIcon}
-      />
+      <View style={[styles.avatar, styles.avatarPlaceholder]}>
+        <Text style={styles.avatarInitials}>{getInitials(user.name)}</Text>
+      </View>
     );
   };
 
   const renderUserItem = ({ item }: { item: User }) => (
     <TouchableOpacity style={styles.userCard} onPress={() => openUserDetails(item)}>
-      <View style={styles.userCardHeader}>
-        <Image source={{ uri: item.avatar }} style={styles.avatar} />
-        <View style={styles.userInfo}>
-          <Text style={styles.userName}>{item.name}</Text>
-          <Text style={styles.userEmail}>{item.email}</Text>
-          <View style={styles.userMeta}>
-            <View style={styles.metaItem}>
-              <Icon name="calendar-alt" size={moderateScale(12)} color={colors.text.secondary} />
-              <Text style={styles.metaText}>{item.joinDate}</Text>
-            </View>
-            <View style={styles.statusBadge}>
-              <View
-                style={[
-                  styles.statusDot,
-                  { backgroundColor: item.status === 'active' ? colors.success : colors.danger },
-                ]}
-              />
-              <Text style={styles.statusText}>{item.status}</Text>
+      <View style={styles.userCardContent}>
+        <View style={styles.userCardLeft}>
+          {renderProfileImage(item)}
+          <View style={styles.userInfo}>
+            <Text style={styles.userName}>{item.name || 'Unknown User'}</Text>
+            <Text style={styles.userEmail}>{item.email || 'No email'}</Text>
+            <View style={styles.userMeta}>
+              <View style={styles.metaItem}>
+                <Icon name="calendar-alt" size={moderateScale(12)} color={colors.text.secondary} />
+                <Text style={styles.metaText}>Joined {formatDate(item.joinDate)}</Text>
+              </View>
             </View>
           </View>
         </View>
-      </View>
-      <View style={styles.userCardBody}>
-        <View style={styles.statsItem}>
-          <Icon name="file-alt" size={moderateScale(14)} color={colors.primary} />
-          <Text style={styles.statsValue}>{0}</Text>
-          <Text style={styles.statsLabel}>Articles</Text>
-        </View>
-        <View style={styles.statsItem}>
-          <Icon name="shopping-cart" size={moderateScale(14)} color={colors.accent} />
-          <Text style={styles.statsValue}>{0}</Text>
-          <Text style={styles.statsLabel}>Purchases</Text>
-        </View>
-        <View style={styles.statsItem}>
-          <Icon name="user-tag" size={moderateScale(14)} color={colors.info} />
-          <Text style={styles.statsValue}>{"User"}</Text>
-          <Text style={styles.statsLabel}>Role</Text>
+
+        <View style={styles.userCardRight}>
+          <View style={[styles.statusBadge, {
+            backgroundColor: item.status === 'active' ? colors.success + '20' : colors.danger + '20'
+          }]}>
+            <View style={[
+              styles.statusDot,
+              { backgroundColor: item.status === 'active' ? colors.success : colors.danger }
+            ]} />
+            <Text style={[styles.statusText, {
+              color: item.status === 'active' ? colors.success : colors.danger
+            }]}>
+              {item.status}
+            </Text>
+          </View>
+
+          <View style={styles.roleBadge}>
+            <Icon
+              name={item.role === 'admin' ? 'crown' : 'user'}
+              size={moderateScale(10)}
+              color={item.role === 'admin' ? colors.warning : colors.info}
+            />
+            <Text style={[styles.roleText, {
+              color: item.role === 'admin' ? colors.warning : colors.info
+            }]}>
+              {item.role}
+            </Text>
+          </View>
+
+          <Icon name="chevron-right" size={moderateScale(14)} color={colors.text.secondary} />
         </View>
       </View>
     </TouchableOpacity>
@@ -241,44 +234,44 @@ export default function UsersScreen({ navigation }: any) {
           <View style={styles.modalHeader}>
             <Text style={styles.modalTitle}>User Details</Text>
             <TouchableOpacity onPress={() => setDetailsModalVisible(false)}>
-              <Icon name="times" size={moderateScale(18)} color={colors.text.primary} />
+              <Icon name="times" size={moderateScale(20)} color={colors.text.primary} />
             </TouchableOpacity>
           </View>
 
           {selectedUser && (
             <View style={styles.userDetailsContainer}>
               <View style={styles.userDetailHeader}>
-                <Image source={{ uri: selectedUser.avatar }} style={styles.detailAvatar} />
+                {renderProfileImage(selectedUser)}
                 <View style={styles.userDetailInfo}>
-                  <Text style={styles.detailName}>{selectedUser.name}</Text>
-                  <Text style={styles.detailEmail}>{selectedUser.email}</Text>
-                  <View style={styles.detailBadge}>
-                    <View
-                      style={[
+                  <Text style={styles.detailName}>{selectedUser.name || 'Unknown User'}</Text>
+                  <Text style={styles.detailEmail}>{selectedUser.email || 'No email'}</Text>
+                  <View style={styles.detailBadges}>
+                    <View style={[styles.detailBadge, {
+                      backgroundColor: selectedUser.status === 'active' ? colors.success + '20' : colors.danger + '20'
+                    }]}>
+                      <View style={[
                         styles.statusDot,
-                        {
-                          backgroundColor:
-                            selectedUser.status === 'active' ? colors.success : colors.danger,
-                        },
-                      ]}
-                    />
-                    <Text style={styles.detailStatus}>{selectedUser.status}</Text>
-                  </View>
-                </View>
-              </View>
+                        { backgroundColor: selectedUser.status === 'active' ? colors.success : colors.danger }
+                      ]} />
+                      <Text style={[styles.detailStatus, {
+                        color: selectedUser.status === 'active' ? colors.success : colors.danger
+                      }]}>
+                        {selectedUser.status}
+                      </Text>
+                    </View>
 
-              <View style={styles.userStatsContainer}>
-                <Text style={styles.sectionTitle}>User Statistics</Text>
-                <View style={styles.statsRow}>
-                  <View style={styles.statCard}>
-                    <Icon name="file-alt" size={moderateScale(24)} color={colors.primary} />
-                    <Text style={styles.statValue}>{0}</Text>
-                    <Text style={styles.statLabel}>Articles</Text>
-                  </View>
-                  <View style={styles.statCard}>
-                    <Icon name="shopping-cart" size={moderateScale(24)} color={colors.accent} />
-                    <Text style={styles.statValue}>{0}</Text>
-                    <Text style={styles.statLabel}>Purchases</Text>
+                    <View style={[styles.detailBadge, { backgroundColor: colors.background.secondary }]}>
+                      <Icon
+                        name={selectedUser.role === 'admin' ? 'crown' : 'user'}
+                        size={moderateScale(12)}
+                        color={selectedUser.role === 'admin' ? colors.warning : colors.info}
+                      />
+                      <Text style={[styles.detailStatus, {
+                        color: selectedUser.role === 'admin' ? colors.warning : colors.info
+                      }]}>
+                        {selectedUser.role}
+                      </Text>
+                    </View>
                   </View>
                 </View>
               </View>
@@ -291,37 +284,49 @@ export default function UsersScreen({ navigation }: any) {
                 </View>
                 <View style={styles.detailRow}>
                   <Text style={styles.detailLabel}>Join Date:</Text>
-                  <Text style={styles.detailValue}>{selectedUser.joinDate}</Text>
+                  <Text style={styles.detailValue}>{formatDate(selectedUser.joinDate)}</Text>
                 </View>
                 <View style={styles.detailRow}>
-                  <Text style={styles.detailLabel}>Role:</Text>
-                  <Text style={styles.detailValue}>{selectedUser.role}</Text>
+                  <Text style={styles.detailLabel}>Email:</Text>
+                  <Text style={styles.detailValue}>{selectedUser.email || 'No email'}</Text>
                 </View>
+                {selectedUser.phone && (
+                  <View style={styles.detailRow}>
+                    <Text style={styles.detailLabel}>Phone:</Text>
+                    <Text style={styles.detailValue}>{selectedUser.phone}</Text>
+                  </View>
+                )}
+                {selectedUser.lastLogin && (
+                  <View style={styles.detailRow}>
+                    <Text style={styles.detailLabel}>Last Login:</Text>
+                    <Text style={styles.detailValue}>{formatDate(selectedUser.lastLogin)}</Text>
+                  </View>
+                )}
               </View>
 
               <View style={styles.actionButtons}>
                 <TouchableOpacity
-                  style={[
-                    styles.actionButton,
-                    { backgroundColor: selectedUser.status === 'active' ? colors.warning : colors.success },
-                  ]}
+                  style={[styles.actionButton, styles.secondaryButton]}
                   onPress={() => showConfirmModal('deactivate')}
                 >
                   <Icon
                     name={selectedUser.status === 'active' ? 'user-slash' : 'user-check'}
                     size={moderateScale(14)}
-                    color="#fff"
+                    color={selectedUser.status === 'active' ? colors.warning : colors.success}
                   />
-                  <Text style={styles.actionButtonText}>
+                  <Text style={[styles.actionButtonText, {
+                    color: selectedUser.status === 'active' ? colors.warning : colors.success
+                  }]}>
                     {selectedUser.status === 'active' ? 'Deactivate' : 'Activate'}
                   </Text>
                 </TouchableOpacity>
+
                 <TouchableOpacity
-                  style={[styles.actionButton, { backgroundColor: colors.danger }]}
+                  style={[styles.actionButton, styles.dangerButton]}
                   onPress={() => showConfirmModal('delete')}
                 >
                   <Icon name="trash-alt" size={moderateScale(14)} color="#fff" />
-                  <Text style={styles.actionButtonText}>Delete</Text>
+                  <Text style={[styles.actionButtonText, { color: '#fff' }]}>Delete</Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -340,6 +345,14 @@ export default function UsersScreen({ navigation }: any) {
     >
       <View style={styles.confirmModalContainer}>
         <View style={styles.confirmModal}>
+          <View style={styles.confirmIconContainer}>
+            <Icon
+              name={actionType === 'delete' ? 'exclamation-triangle' : 'question-circle'}
+              size={moderateScale(24)}
+              color={actionType === 'delete' ? colors.danger : colors.warning}
+            />
+          </View>
+
           <Text style={styles.confirmTitle}>
             {actionType === 'delete'
               ? 'Delete User'
@@ -347,13 +360,15 @@ export default function UsersScreen({ navigation }: any) {
                 ? 'Deactivate User'
                 : 'Activate User'}
           </Text>
+
           <Text style={styles.confirmText}>
             {actionType === 'delete'
-              ? `Are you sure you want to delete ${selectedUser?.name}? This action cannot be undone.`
+              ? `Are you sure you want to delete ${selectedUser?.name || 'this user'}? This action cannot be undone.`
               : selectedUser?.status === 'active'
-                ? `Are you sure you want to deactivate ${selectedUser?.name}? They will not be able to login.`
-                : `Are you sure you want to activate ${selectedUser?.name}? They will be able to login again.`}
+                ? `Are you sure you want to deactivate ${selectedUser?.name || 'this user'}? They will not be able to login.`
+                : `Are you sure you want to activate ${selectedUser?.name || 'this user'}? They will be able to login again.`}
           </Text>
+
           <View style={styles.confirmButtons}>
             <TouchableOpacity
               style={[styles.confirmButton, styles.cancelButton]}
@@ -361,18 +376,11 @@ export default function UsersScreen({ navigation }: any) {
             >
               <Text style={styles.cancelButtonText}>Cancel</Text>
             </TouchableOpacity>
+
             <TouchableOpacity
-              style={[
-                styles.confirmButton,
-                {
-                  backgroundColor:
-                    actionType === 'delete'
-                      ? colors.danger
-                      : selectedUser?.status === 'active'
-                        ? colors.warning
-                        : colors.success,
-                },
-              ]}
+              style={[styles.confirmButton, styles.confirmActionButton, {
+                backgroundColor: actionType === 'delete' ? colors.danger : colors.primary
+              }]}
               onPress={actionType === 'delete' ? handleDeleteUser : handleToggleUserStatus}
             >
               <Text style={styles.confirmButtonText}>
@@ -400,6 +408,11 @@ export default function UsersScreen({ navigation }: any) {
 
   return (
     <SafeAreaView style={styles.container}>
+      <View style={styles.header}>
+        <Text style={styles.headerTitle}>Users Management</Text>
+        <Text style={styles.headerSubtitle}>{filteredUsers.length} users found</Text>
+      </View>
+
       <View style={styles.searchContainer}>
         <View style={styles.searchInputContainer}>
           <Icon name="search" size={moderateScale(16)} color={colors.text.secondary} />
@@ -418,54 +431,6 @@ export default function UsersScreen({ navigation }: any) {
         </View>
       </View>
 
-      <View style={styles.sortContainer}>
-        <Text style={styles.sortLabel}>Sort by:</Text>
-        <TouchableOpacity style={styles.sortButton} onPress={() => handleSort('name')}>
-          <Text
-            style={[
-              styles.sortButtonText,
-              sortBy === 'name' && { color: colors.primary, fontWeight: 'bold' },
-            ]}
-          >
-            Name
-          </Text>
-          {renderSortIcon('name')}
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.sortButton} onPress={() => handleSort('articles')}>
-          <Text
-            style={[
-              styles.sortButtonText,
-              sortBy === 'articles' && { color: colors.primary, fontWeight: 'bold' },
-            ]}
-          >
-            Articles
-          </Text>
-          {renderSortIcon('articles')}
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.sortButton} onPress={() => handleSort('purchases')}>
-          <Text
-            style={[
-              styles.sortButtonText,
-              sortBy === 'purchases' && { color: colors.primary, fontWeight: 'bold' },
-            ]}
-          >
-            Purchases
-          </Text>
-          {renderSortIcon('purchases')}
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.sortButton} onPress={() => handleSort('status')}>
-          <Text
-            style={[
-              styles.sortButtonText,
-              sortBy === 'status' && { color: colors.primary, fontWeight: 'bold' },
-            ]}
-          >
-            Status
-          </Text>
-          {renderSortIcon('status')}
-        </TouchableOpacity>
-      </View>
-
       <FlatList
         data={filteredUsers}
         renderItem={renderUserItem}
@@ -473,13 +438,22 @@ export default function UsersScreen({ navigation }: any) {
         contentContainerStyle={styles.listContent}
         showsVerticalScrollIndicator={false}
         refreshControl={
-          <RefreshControl refreshing={isRefreshing} onRefresh={handleRefresh} colors={[colors.primary]} />
+          <RefreshControl
+            refreshing={isRefreshing}
+            onRefresh={handleRefresh}
+            colors={[colors.primary]}
+            tintColor={colors.primary}
+          />
         }
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
-            <Icon name="users-slash" size={moderateScale(48)} color={colors.text.secondary} />
+            <View style={styles.emptyIconContainer}>
+              <Icon name="users-slash" size={moderateScale(48)} color={colors.text.secondary} />
+            </View>
             <Text style={styles.emptyText}>No users found</Text>
-            <Text style={styles.emptySubtext}>Try adjusting your search</Text>
+            <Text style={styles.emptySubtext}>
+              {searchQuery ? 'Try adjusting your search' : 'Users will appear here when available'}
+            </Text>
           </View>
         }
       />

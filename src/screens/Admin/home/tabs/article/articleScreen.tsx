@@ -20,7 +20,6 @@ import ArticleDetailModal from './articleDetail';
 import { globalStyles } from '../../../../../styles/admin/global';
 import { colors, moderateScale } from '../../../../../styles/admin/theme';
 import styles from '../../../../../styles/admin/article.style';
-import { mockArticles } from '../../../../../types/type';
 import { fetchArticles } from '../../../../../controller/Articles.controller';
 import { deleteArrticle } from '../../../../../Api/AdminDasboard.api';
 
@@ -48,6 +47,7 @@ const ArticlesScreen = ({ navigation }:any) => {
         setLoading(false);
       }
     };
+    
   useEffect(() => {
     loadArticles();
     setTimeout(() => {
@@ -166,13 +166,16 @@ const ArticlesScreen = ({ navigation }:any) => {
         </TouchableOpacity>
       </View>
       
-      {/* Filter tabs */}
+      {/* Filter tabs - Updated with better scrolling */}
       <View style={styles.filterContainerWrapper}>
         <ScrollView 
           horizontal
           showsHorizontalScrollIndicator={false}
           style={styles.filterContainer}
           contentContainerStyle={styles.filterContentContainer}
+          bounces={false}
+          decelerationRate="fast"
+          snapToInterval={moderateScale(100)} // Snap to make scrolling smoother
         >
           <FilterButton 
             title="All" 
@@ -199,6 +202,8 @@ const ArticlesScreen = ({ navigation }:any) => {
             active={activeFilter === 'year'}
             onPress={() => setActiveFilter('year')}
           />
+          {/* Add some padding at the end to ensure last item is fully visible */}
+          <View style={{ width: moderateScale(16) }} />
         </ScrollView>
       </View>
       

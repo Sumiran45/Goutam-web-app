@@ -22,7 +22,7 @@ export const fetchArticles = async (): Promise<Article[]> => {
   })).reverse();
 };
 
-export const addArticle = async (title: string, content: string): Promise<Article> => {
+export const addArticle = async (title: string, content: string, youtubeLink?:string): Promise<Article> => {
   const token = await AsyncStorage.getItem('token');
   const res = await api.post(
     '/articles',

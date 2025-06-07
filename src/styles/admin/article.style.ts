@@ -1,6 +1,6 @@
 import { StyleSheet, Dimensions } from 'react-native';
-import { colors, moderateScale, verticalScale } from '../../../src/styles/admin/theme';
-import { globalStyles } from '../../../src/styles/admin/global';
+import { colors, moderateScale, verticalScale } from '../admin/theme';
+import { globalStyles } from '../admin/global';
 
 const { width } = Dimensions.get('window');
 const isSmallDevice = width < 375;
@@ -49,6 +49,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+  
+  // Updated filter container styles for better scrolling
   filterContainerWrapper: {
     zIndex: 10,
     backgroundColor: colors.background.main,
@@ -56,13 +58,17 @@ const styles = StyleSheet.create({
     marginBottom: moderateScale(5),
     borderBottomWidth: 1,
     borderBottomColor: colors.border.light,
+    maxHeight: moderateScale(60),
   },
   filterContainer: {
     flexGrow: 0,
+    maxHeight: moderateScale(50),
   },
   filterContentContainer: {
     paddingHorizontal: moderateScale(16),
     paddingVertical: moderateScale(5),
+    alignItems: 'center',
+    minWidth: width,
   },
   articleList: {
     padding: moderateScale(16),
@@ -86,7 +92,9 @@ const styles = StyleSheet.create({
     marginTop: moderateScale(8),
     textAlign: 'center',
   },
-   articleItem: {
+  
+  // Article item styles
+  articleItem: {
     backgroundColor: colors.background.secondary,
     borderRadius: moderateScale(12),
     padding: moderateScale(16),
@@ -168,14 +176,15 @@ const styles = StyleSheet.create({
     marginLeft: moderateScale(4),
   },
 
-  //filter style 
-    filterButton: {
+  // Filter button styles 
+  filterButton: {
     paddingHorizontal: moderateScale(16),
     paddingVertical: moderateScale(8),
     borderRadius: moderateScale(20),
     backgroundColor: colors.background.secondary,
     marginRight: moderateScale(8),
     ...globalStyles.cardShadow,
+    minWidth: moderateScale(70),
   },
   filterButtonActive: {
     backgroundColor: colors.primary,
@@ -184,14 +193,14 @@ const styles = StyleSheet.create({
     color: colors.text.primary,
     fontSize: moderateScale(14),
     fontWeight: '500',
+    textAlign: 'center',
   },
   filterButtonTextActive: {
     color: colors.text.white,
   },
 
-  // new article modal style
-
-   modalContainer: {
+  // New article modal styles
+  modalContainer: {
     flex: 1,
     justifyContent: 'center',
     backgroundColor: colors.background.overlay,
@@ -238,34 +247,84 @@ const styles = StyleSheet.create({
     height: verticalScale(200),
     textAlignVertical: 'top',
   },
+  
+  // YouTube section styles for NewArticleModal
+  youtubeSection: {
+    marginTop: moderateScale(8),
+  },
+  youtubeLabelContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: moderateScale(6),
+  },
+  youtubeLabel: {
+    marginLeft: moderateScale(8),
+    marginBottom: 0,
+  },
+  errorContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: moderateScale(4),
+    paddingHorizontal: moderateScale(4),
+  },
+  errorText: {
+    fontSize: moderateScale(12),
+    color: colors.error,
+    marginLeft: moderateScale(4),
+  },
+  successContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: moderateScale(4),
+    paddingHorizontal: moderateScale(4),
+  },
+  successText: {
+    fontSize: moderateScale(12),
+    color: colors.success || colors.primary,
+    marginLeft: moderateScale(4),
+  },
+  
+  // Modal footer styles
   modalFooter: {
     flexDirection: 'row',
-    justifyContent: 'flex-end',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     padding: moderateScale(16),
     borderTopWidth: 1,
     borderTopColor: colors.border.light,
+    backgroundColor: colors.background.main,
   },
   cancelButton: {
-    paddingVertical: moderateScale(10),
+    flex: 1,
+    paddingVertical: moderateScale(12),
     paddingHorizontal: moderateScale(16),
     borderRadius: moderateScale(8),
-    marginRight: moderateScale(12),
+    backgroundColor: colors.background.secondary,
+    marginRight: moderateScale(8),
+    alignItems: 'center',
   },
   cancelButtonText: {
     fontSize: moderateScale(14),
-    color: colors.text.secondary,
     fontWeight: '500',
+    color: colors.text.secondary,
   },
   saveButton: {
-    backgroundColor: colors.primary,
-    paddingVertical: moderateScale(10),
-    paddingHorizontal: moderateScale(20),
+    flex: 1,
+    paddingVertical: moderateScale(12),
+    paddingHorizontal: moderateScale(16),
     borderRadius: moderateScale(8),
+    backgroundColor: colors.primary,
+    marginLeft: moderateScale(8),
+    alignItems: 'center',
+  },
+  saveButtonDisabled: {
+    backgroundColor: colors.text.light,
+    opacity: 0.6,
   },
   saveButtonText: {
     fontSize: moderateScale(14),
-    color: colors.text.white,
     fontWeight: '600',
+    color: colors.text.white,
   },
 });
 

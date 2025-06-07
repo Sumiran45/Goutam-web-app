@@ -59,7 +59,6 @@ export default function AdminScreen({ navigation }:any) {
           <View style={globalStyles.placeholderContainer}>
             <Icon
               name={
-                // activeTab === 'articles' ? 'file-alt' :
                 activeTab === 'products' ? 'shopping-cart' :
                 activeTab === 'analytics' ? 'chart-bar' : 'cog'
               }
