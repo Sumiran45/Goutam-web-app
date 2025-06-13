@@ -22,6 +22,10 @@ import UserDetailsScreen from './src/screens/Admin/home/tabs/userScreen';
 import ArticleDetailScreen from './src/screens/Admin/home/tabs/article/articleScreen';
 import DoctorDetailScreen from './src/screens/tabs/DoctorsScreen';
 import { LocationProvider } from './src/Context/LocationContext';
+import ProductScreen from './src/screens/Admin/home/tabs/products/productScreen';
+import ProductDetailScreen from './src/screens/Admin/home/tabs/products/productDetail';
+import AddProductScreen from './src/screens/Admin/home/tabs/products/addProductScreen';
+import EditProductScreen from './src/screens/Admin/home/tabs/products/editProductScreen';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -48,6 +52,11 @@ export default function App() {
             <Stack.Screen name="UserDetails" component={UserDetailsScreen} options={{ headerShown: false }}/>
             <Stack.Screen name="ArticleDetails" component={ArticleDetailScreen} options={{ headerShown: false }}/>
             <Stack.Screen name="DoctorDetail" component={DoctorDetailScreen} options={{ headerShown: false }}/>
+            <Stack.Screen name="ProductScreen" component={ProductScreen} options={{ headerShown: false }}/>
+            <Stack.Screen name="ProductDetailScreen" component={ProductDetailScreen} options={{ headerShown: false }}/>
+            <Stack.Screen name="AddProductScreen" component={AddProductScreen} options={{ headerShown: false }}/>
+            <Stack.Screen name="EditProductScreen" component={EditProductScreen} options={{ headerShown: false }}/>
+          
           </Stack.Navigator>
         </CartProvider>
         </LocationProvider>

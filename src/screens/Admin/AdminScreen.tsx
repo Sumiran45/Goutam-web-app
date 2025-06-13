@@ -18,6 +18,7 @@ import UsersScreen from './home/tabs/userScreen';
 import { globalStyles } from '../../styles/admin/global';
 import { colors, moderateScale } from '../../styles/admin/theme';
 import ArticlesScreen from './home/tabs/article/articleScreen';
+import ProductScreen from './home/tabs/products/productScreen';
 
 const { width } = Dimensions.get('window');
 
@@ -53,13 +54,14 @@ export default function AdminScreen({ navigation }:any) {
       case 'users':
         return <UsersScreen navigation={navigation} />;
       case 'articles':
-        return <ArticlesScreen navigation={navigation} />
+        return <ArticlesScreen navigation={navigation} />;
+      case 'products':
+        return <ProductScreen navigation={navigation} />;  
       default:
         return (
           <View style={globalStyles.placeholderContainer}>
             <Icon
               name={
-                activeTab === 'products' ? 'shopping-cart' :
                 activeTab === 'analytics' ? 'chart-bar' : 'cog'
               }
               size={moderateScale(40)}

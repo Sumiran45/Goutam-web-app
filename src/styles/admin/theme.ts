@@ -16,6 +16,9 @@ export const colors = {
   success: '#4CAF50',
   info: '#2196F3',
   error: '#FF5252',
+  white: '#fff',
+  // background: '#f6f8fa',
+  // border: '#eee',
   text: {
     primary: '#333',
     secondary: '#666',
@@ -27,12 +30,11 @@ export const colors = {
     primary: '#f6f8fa',
     secondary: '#fff',
     overlay: 'rgba(0, 0, 0, 0.5)',
-    
   },
-   border: {
+  border: {
     light: '#eee',
     medium: '#f0f0f0',
-     input: '#e0e0e0',
+    input: '#e0e0e0',
   },
 };
 
