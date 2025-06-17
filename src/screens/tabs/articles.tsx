@@ -58,7 +58,7 @@ export const ArticlesScreen = () => {
 
       const allArticles = await fetchArticles();
 
-      const enhancedArticles = allArticles.map((article, index) => ({
+      const enhancedArticles = allArticles.map((article:any, index:any) => ({
         ...article,
         videoUrl: index % 3 === 0 ? 'https://youtu.be/JMeKBKe2NVw?si=KiVesVk6tYacBsC9' :
           index % 3 === 1 ? 'https://youtu.be/dQw4w9WgXcQ' :

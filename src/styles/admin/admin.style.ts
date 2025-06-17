@@ -251,7 +251,7 @@ export const styles = StyleSheet.create({
     fontSize: moderateScale(15),
     color: colors.text.primary,
     marginLeft: moderateScale(12),
-     borderColor: 'transparent',
+    borderColor: 'transparent',
     backgroundColor: 'transparent',
     height: '100%',
     fontWeight: '500',

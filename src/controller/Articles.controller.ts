@@ -8,71 +8,60 @@ export type Article = {
   date: string;
   summary: string;
   content: string;
+  youtube_link?: string;
 };
 
 export const fetchArticles = async (): Promise<Article[]> => {
-  const res = await api.get('/articles');
-  return res.data.map((a: any) => ({
-    id: a.id || a._id || Math.random().toString(),
-    title: a.heading,
-    author: a.author?.name || 'Unknown',
-    date: a.date,
-    summary: a.body.substring(0, 100) + '...',
-    content: a.body,
-  })).reverse();
-};
-
-export const addArticle = async (title: string, content: string, youtubeLink?:string): Promise<Article> => {
-  const token = await AsyncStorage.getItem('token');
-  const res = await api.post(
-    '/articles',
-    {
-      heading: title,
-      body: content,
-    },
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
+  try {
+    console.log('Fetching articles...');
+    const res = await api.get('/articles');
+    console.log('API Response:', res.data);
+    
+    if (!res.data || !Array.isArray(res.data)) {
+      console.warn('Invalid response format:', res.data);
+      return [];
     }
-  );
 
-  const a = res.data;
-  return {
-    id: a.id || a._id || Math.random().toString(),
-    title: a.heading,
-    author: a.author?.name || 'You',
-    date: a.date,
-    summary: a.body.substring(0, 100) + '...',
-    content: a.body,
-  };
-};
+    const articles = res.data.map((a: any) => {
+      console.log('Processing article:', a);
+      
+      return {
+        id: a.id || a._id || Math.random().toString(),
+        title: a.heading || a.title || 'Untitled',
+        author: a.author?.name || a.author?.username || 'Unknown',
+        date: a.date || new Date().toISOString(),
+        summary: a.body ? (a.body.substring(0, 100) + (a.body.length > 100 ? '...' : '')) : 'No content',
+        content: a.body || '',
+        youtube_link: a.youtube_link
+      };
+    }).reverse();
 
-export const updateArticle = async (
-  article_id: string,
-  title: string,
-  content: string
-) => {
-  const token = await AsyncStorage.getItem('token');
-  const response = await api.put(
-    `/articles/${article_id}`,
-    {
-      heading: title,
-      body: content,
-    },
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
+    console.log(`Processed ${articles.length} articles`);
+    return articles;
+    
+  } catch (error:any) {
+    console.error('Error fetching articles:', error);
+    
+    if (error.response) {
+      console.error('Response status:', error.response.status);
+      console.error('Response data:', error.response.data);
+    } else if (error.request) {
+      console.error('No response received:', error.request);
+    } else {
+      console.error('Error message:', error.message);
     }
-  );
-
-  return {
-    id: response.data.id || response.data._id,
-    title: response.data.heading,
-    content: response.data.body,
-    author: response.data.author?.email || 'Unknown',
-    date: response.data.date,
-  };
+    
+    return [];
+  }
 };
 
+export const testAPIConnection = async (): Promise<boolean> => {
+  try {
+    const res = await api.get('/articles');
+    console.log('API connection test successful');
+    return true;
+  } catch (error) {
+    console.error('API connection test failed:', error);
+    return false;
+  }
+};

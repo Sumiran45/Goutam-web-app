@@ -99,14 +99,26 @@ export const styles = StyleSheet.create({
     fontWeight: '500',
   },
   input: {
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#f8f8f8',
     borderRadius: 8,
     paddingHorizontal: 12,
-    paddingVertical: 10,
+    paddingVertical: 12,
     borderWidth: 1,
     borderColor: '#e0e0e0',
     fontSize: 16,
     color: '#333',
+  },
+  disabledInput: {
+    backgroundColor: '#f0f0f0',
+    color: '#999',
+    borderColor: '#d0d0d0',
+  },
+  helperText: {
+    fontSize: 12,
+    color: '#888',
+    marginTop: 4,
+    fontStyle: 'italic',
+    paddingLeft: 4,
   },
   passwordButton: {
     flexDirection: 'row',

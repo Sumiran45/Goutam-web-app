@@ -1,608 +1,3 @@
-// import React, { useState } from 'react';
-// import {
-//   View, Text, TextInput, TouchableOpacity, Image,
-//   KeyboardAvoidingView, Platform, ScrollView, StatusBar,
-//   Dimensions, Modal, Alert, ViewStyle, TextStyle
-// } from 'react-native';
-// import Icon from 'react-native-vector-icons/FontAwesome';
-// import { useRegister } from './controller/Register.controller';
-// import { styles } from './styles/Register.style';
-
-// const { width, height } = Dimensions.get('window');
-
-// interface OnboardingData {
-//   firstName: string;
-//   lastName: string;
-//   age: string;
-//   weight: string;
-//   height: string;
-//   lastPeriodDate: string;
-//   cycleLength: string;
-//   periodLength: string;
-//   symptoms: string[];
-//   goals: string[];
-// }
-
-// export default function RegisterScreen({ navigation }: any) {
-//   const [isLoading, setIsLoading] = useState<boolean>(false);
-//   const [showOnboarding, setShowOnboarding] = useState<boolean>(false);
-//   const [showVerification, setShowVerification] = useState<boolean>(false);
-//   const [currentSlide, setCurrentSlide] = useState<number>(0);
-//   const [registrationType, setRegistrationType] = useState<'email' | 'phone'>('email');
-//   const [verificationCode, setVerificationCode] = useState<string>('');
-//   const [isVerifying, setIsVerifying] = useState<boolean>(false);
-
-//   const [onboardingData, setOnboardingData] = useState<OnboardingData>({
-//     firstName: '',
-//     lastName: '',
-//     age: '',
-//     weight: '',
-//     height: '',
-//     lastPeriodDate: '',
-//     cycleLength: '28',
-//     periodLength: '5',
-//     symptoms: [],
-//     goals: []
-//   });
-
-//   const {
-//     username, email, password, confirmPassword, phoneNumber,
-//     showPassword, showConfirmPassword,
-//     errors,
-//     handleUsernameChange, handleEmailChange, handlePhoneNumberChange,
-//     handlePasswordChange, handleConfirmPasswordChange,
-//     togglePasswordVisibility, toggleConfirmPasswordVisibility,
-//     handleRegister,
-//   } = useRegister(navigation, setIsLoading);
-
-//   React.useEffect(() => {
-//     navigation.setOptions({
-//       headerShown: false,
-//     });
-//   }, [navigation]);
-
-//   const handleSuccessfulRegister = async () => {
-//     try {
-//       setIsLoading(true);
-//       const result = await handleRegister();
-
-//       if (result && result.success) {
-//         setIsLoading(false);
-//         setShowVerification(true);
-//       } else {
-//         setIsLoading(false);
-//         Alert.alert('Registration Failed', 'Please check your information and try again.');
-//       }
-//     } catch (error) {
-//       setIsLoading(false);
-//       Alert.alert('Registration Failed', 'An error occurred during registration.');
-//     }
-//   };
-
-//   const handleVerificationCodeSubmit = async () => {
-//     if (!verificationCode || verificationCode.length !== 6) {
-//       Alert.alert('Invalid Code', 'Please enter a valid 6-digit verification code.');
-//       return;
-//     }
-
-//     try {
-//       setIsVerifying(true);
-//       // Here you would call your verification API
-//       // const verificationResult = await verifyEmailCode(verificationCode);
-      
-//       // Simulating API call
-//       await new Promise(resolve => setTimeout(resolve, 2000));
-      
-//       setIsVerifying(false);
-//       setShowVerification(false);
-//       setShowOnboarding(true);
-//     } catch (error) {
-//       setIsVerifying(false);
-//       Alert.alert('Verification Failed', 'Invalid verification code. Please try again.');
-//     }
-//   };
-
-//   const handleResendCode = async () => {
-//     try {
-//       // Here you would call your resend verification code API
-//       // await resendVerificationCode();
-//       Alert.alert('Code Sent', 'A new verification code has been sent to your email.');
-//     } catch (error) {
-//       Alert.alert('Error', 'Failed to resend verification code. Please try again.');
-//     }
-//   };
-
-//   const handleSkip = () => {
-//     setShowOnboarding(false);
-//     navigation.navigate('Home');
-//   };
-
-//   const handleNext = () => {
-//     if (currentSlide < 3) {
-//       setCurrentSlide(currentSlide + 1);
-//     } else {
-//       handleCompleteOnboarding();
-//     }
-//   };
-
-//   const handlePrevious = () => {
-//     if (currentSlide > 0) {
-//       setCurrentSlide(currentSlide - 1);
-//     }
-//   };
-
-//   const handleCompleteOnboarding = async () => {
-//     try {
-//       console.log('Onboarding data:', onboardingData);
-//       setShowOnboarding(false);
-//       navigation.navigate('Home');
-//     } catch (error) {
-//       Alert.alert('Error', 'Failed to save profile information');
-//     }
-//   };
-
-//   const updateOnboardingData = (field: keyof OnboardingData, value: any) => {
-//     setOnboardingData(prev => ({
-//       ...prev,
-//       [field]: value
-//     }));
-//   };
-
-//   const toggleSymptom = (symptom: string) => {
-//     setOnboardingData((prev: OnboardingData) => ({
-//       ...prev,
-//       symptoms: prev.symptoms.includes(symptom)
-//         ? prev.symptoms.filter((s: string) => s !== symptom)
-//         : [...prev.symptoms, symptom]
-//     }));
-//   };
-
-//   const toggleGoal = (goal: string) => {
-//     setOnboardingData((prev: OnboardingData) => ({
-//       ...prev,
-//       goals: prev.goals.includes(goal)
-//         ? prev.goals.filter((g: string) => g !== goal)
-//         : [...prev.goals, goal]
-//     }));
-//   };
-
-//   const renderProgressBar = () => {
-//     const progressWidth = ((currentSlide + 1) / 4) * 100;
-
-//     return (
-//       <View style={onboardingStyles.progressBarContainer}>
-//         <View style={onboardingStyles.progressBarBackground}>
-//           <View style={[onboardingStyles.progressBarFill, { width: `${progressWidth}%` }]} />
-//         </View>
-//         <Text style={onboardingStyles.progressText}>{currentSlide + 1} of 4</Text>
-//       </View>
-//     );
-//   };
-
-//   const renderSlide = () => {
-//     switch (currentSlide) {
-//       case 0:
-//         return (
-//           <View style={onboardingStyles.slideContainer}>
-//             <Text style={onboardingStyles.slideTitle}>Personal Information</Text>
-//             <Text style={onboardingStyles.slideSubtitle}>Let's get to know you better</Text>
-
-//             <View style={onboardingStyles.inputRow}>
-//               <View style={[onboardingStyles.inputContainer, { flex: 1, marginRight: 10 }]}>
-//                 <TextInput
-//                   placeholder="First Name"
-//                   value={onboardingData.firstName}
-//                   onChangeText={(text) => updateOnboardingData('firstName', text)}
-//                   style={onboardingStyles.input}
-//                   placeholderTextColor="#999"
-//                 />
-//               </View>
-//               <View style={[onboardingStyles.inputContainer, { flex: 1, marginLeft: 10 }]}>
-//                 <TextInput
-//                   placeholder="Last Name"
-//                   value={onboardingData.lastName}
-//                   onChangeText={(text) => updateOnboardingData('lastName', text)}
-//                   style={onboardingStyles.input}
-//                   placeholderTextColor="#999"
-//                 />
-//               </View>
-//             </View>
-
-//             <View style={onboardingStyles.inputRow}>
-//               <View style={[onboardingStyles.inputContainer, { flex: 1, marginRight: 10 }]}>
-//                 <TextInput
-//                   placeholder="Age"
-//                   value={onboardingData.age}
-//                   onChangeText={(text) => updateOnboardingData('age', text)}
-//                   style={onboardingStyles.input}
-//                   keyboardType="numeric"
-//                   placeholderTextColor="#999"
-//                 />
-//               </View>
-//               <View style={[onboardingStyles.inputContainer, { flex: 1, marginLeft: 10 }]}>
-//                 <TextInput
-//                   placeholder="Weight (kg)"
-//                   value={onboardingData.weight}
-//                   onChangeText={(text) => updateOnboardingData('weight', text)}
-//                   style={onboardingStyles.input}
-//                   keyboardType="numeric"
-//                   placeholderTextColor="#999"
-//                 />
-//               </View>
-//             </View>
-
-//             <View style={onboardingStyles.inputContainer}>
-//               <TextInput
-//                 placeholder="Height (cm)"
-//                 value={onboardingData.height}
-//                 onChangeText={(text) => updateOnboardingData('height', text)}
-//                 style={onboardingStyles.input}
-//                 keyboardType="numeric"
-//                 placeholderTextColor="#999"
-//               />
-//             </View>
-//           </View>
-//         );
-
-//       case 1:
-//         return (
-//           <View style={onboardingStyles.slideContainer}>
-//             <Text style={onboardingStyles.slideTitle}>Cycle Information</Text>
-//             <Text style={onboardingStyles.slideSubtitle}>Help us track your cycle accurately</Text>
-
-//             <View style={onboardingStyles.inputContainer}>
-//               <Text style={onboardingStyles.inputLabel}>Last Period Start Date</Text>
-//               <TextInput
-//                 placeholder="DD/MM/YYYY"
-//                 value={onboardingData.lastPeriodDate}
-//                 onChangeText={(text) => updateOnboardingData('lastPeriodDate', text)}
-//                 style={onboardingStyles.input}
-//                 placeholderTextColor="#999"
-//               />
-//             </View>
-
-//             <View style={onboardingStyles.inputRow}>
-//               <View style={[onboardingStyles.inputContainer, { flex: 1, marginRight: 10 }]}>
-//                 <Text style={onboardingStyles.inputLabel}>Cycle Length (days)</Text>
-//                 <TextInput
-//                   placeholder="28"
-//                   value={onboardingData.cycleLength}
-//                   onChangeText={(text) => updateOnboardingData('cycleLength', text)}
-//                   style={onboardingStyles.input}
-//                   keyboardType="numeric"
-//                   placeholderTextColor="#999"
-//                 />
-//               </View>
-//               <View style={[onboardingStyles.inputContainer, { flex: 1, marginLeft: 10 }]}>
-//                 <Text style={onboardingStyles.inputLabel}>Period Length (days)</Text>
-//                 <TextInput
-//                   placeholder="5"
-//                   value={onboardingData.periodLength}
-//                   onChangeText={(text) => updateOnboardingData('periodLength', text)}
-//                   style={onboardingStyles.input}
-//                   keyboardType="numeric"
-//                   placeholderTextColor="#999"
-//                 />
-//               </View>
-//             </View>
-//           </View>
-//         );
-
-//       case 2:
-//         return (
-//           <View style={onboardingStyles.slideContainer}>
-//             <Text style={onboardingStyles.slideTitle}>Common Symptoms</Text>
-//             <Text style={onboardingStyles.slideSubtitle}>Select symptoms you typically experience</Text>
-
-//             <View style={onboardingStyles.optionsContainer}>
-//               {['Cramps', 'Headaches', 'Mood Swings', 'Bloating', 'Fatigue', 'Nausea', 'Back Pain', 'Tender Breasts'].map((symptom) => (
-//                 <TouchableOpacity
-//                   key={symptom}
-//                   style={[
-//                     onboardingStyles.optionButton,
-//                     onboardingData.symptoms.includes(symptom) && onboardingStyles.selectedOption
-//                   ]}
-//                   onPress={() => toggleSymptom(symptom)}
-//                 >
-//                   <Text style={[
-//                     onboardingStyles.optionText,
-//                     onboardingData.symptoms.includes(symptom) && onboardingStyles.selectedOptionText
-//                   ]}>
-//                     {symptom}
-//                   </Text>
-//                 </TouchableOpacity>
-//               ))}
-//             </View>
-//           </View>
-//         );
-
-//       case 3:
-//         return (
-//           <View style={onboardingStyles.slideContainer}>
-//             <Text style={onboardingStyles.slideTitle}>Your Goals</Text>
-//             <Text style={onboardingStyles.slideSubtitle}>What would you like to achieve?</Text>
-
-//             <View style={onboardingStyles.optionsContainer}>
-//               {['Track Period', 'Monitor Symptoms', 'Plan Pregnancy', 'Avoid Pregnancy', 'Improve Health', 'Understand Patterns'].map((goal) => (
-//                 <TouchableOpacity
-//                   key={goal}
-//                   style={[
-//                     onboardingStyles.optionButton,
-//                     onboardingData.goals.includes(goal) && onboardingStyles.selectedOption
-//                   ]}
-//                   onPress={() => toggleGoal(goal)}
-//                 >
-//                   <Text style={[
-//                     onboardingStyles.optionText,
-//                     onboardingData.goals.includes(goal) && onboardingStyles.selectedOptionText
-//                   ]}>
-//                     {goal}
-//                   </Text>
-//                 </TouchableOpacity>
-//               ))}
-//             </View>
-//           </View>
-//         );
-
-//       default:
-//         return null;
-//     }
-//   };
-
-//   return (
-//     <View style={styles.container}>
-//       <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
-//       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }}>
-//         <ScrollView contentContainerStyle={styles.scrollContainer} showsVerticalScrollIndicator={false}>
-//           <View style={styles.logoContainer}>
-//             <Image source={require('../assets/images/bear.png')} style={styles.logo} resizeMode="contain" />
-//             <Text style={styles.welcomeText}>Create Account</Text>
-//           </View>
-
-//           <View style={styles.formContainer}>
-//             <Text style={styles.title}>Register</Text>
-
-//             {/* Registration Type Toggle */}
-//             <View style={verificationStyles.toggleContainer}>
-//               <TouchableOpacity
-//                 style={[
-//                   verificationStyles.toggleButton,
-//                   registrationType === 'email' && verificationStyles.activeToggle
-//                 ]}
-//                 onPress={() => setRegistrationType('email')}
-//               >
-//                 <Icon name="envelope" size={16} color={registrationType === 'email' ? '#fff' : '#666'} />
-//                 <Text style={[
-//                   verificationStyles.toggleText,
-//                   registrationType === 'email' && verificationStyles.activeToggleText
-//                 ]}>Email</Text>
-//               </TouchableOpacity>
-//               <TouchableOpacity
-//                 style={[
-//                   verificationStyles.toggleButton,
-//                   registrationType === 'phone' && verificationStyles.activeToggle
-//                 ]}
-//                 onPress={() => setRegistrationType('phone')}
-//               >
-//                 <Icon name="phone" size={16} color={registrationType === 'phone' ? '#fff' : '#666'} />
-//                 <Text style={[
-//                   verificationStyles.toggleText,
-//                   registrationType === 'phone' && verificationStyles.activeToggleText
-//                 ]}>Phone</Text>
-//               </TouchableOpacity>
-//             </View>
-
-//             {/* Username */}
-//             <View style={styles.inputContainer}>
-//               <Icon name="user" size={18} color="#666" style={styles.inputIcon} />
-//               <TextInput
-//                 placeholder="Username"
-//                 value={username}
-//                 onChangeText={handleUsernameChange}
-//                 style={styles.input}
-//                 autoCapitalize="none"
-//                 placeholderTextColor="#999"
-//               />
-//             </View>
-//             {errors.username && <Text style={styles.error}>{errors.username}</Text>}
-
-//             {/* Email or Phone */}
-//             {registrationType === 'email' ? (
-//               <>
-//                 <View style={styles.inputContainer}>
-//                   <Icon name="envelope" size={18} color="#666" style={styles.inputIcon} />
-//                   <TextInput
-//                     placeholder="Email"
-//                     value={email}
-//                     onChangeText={handleEmailChange}
-//                     style={styles.input}
-//                     autoCapitalize="none"
-//                     keyboardType="email-address"
-//                     placeholderTextColor="#999"
-//                   />
-//                 </View>
-//                 {errors.email && <Text style={styles.error}>{errors.email}</Text>}
-//               </>
-//             ) : (
-//               <>
-//                 <View style={styles.inputContainer}>
-//                   <Icon name="phone" size={18} color="#666" style={styles.inputIcon} />
-//                   <TextInput
-//                     placeholder="Phone Number"
-//                     value={phoneNumber}
-//                     onChangeText={handlePhoneNumberChange}
-//                     style={styles.input}
-//                     keyboardType="phone-pad"
-//                     placeholderTextColor="#999"
-//                   />
-//                 </View>
-//                 {errors.phoneNumber && <Text style={styles.error}>{errors.phoneNumber}</Text>}
-                
-//                 {/* Email for phone registration */}
-//                 <View style={styles.inputContainer}>
-//                   <Icon name="envelope" size={18} color="#666" style={styles.inputIcon} />
-//                   <TextInput
-//                     placeholder="Email (for verification)"
-//                     value={email}
-//                     onChangeText={handleEmailChange}
-//                     style={styles.input}
-//                     autoCapitalize="none"
-//                     keyboardType="email-address"
-//                     placeholderTextColor="#999"
-//                   />
-//                 </View>
-//                 {errors.email && <Text style={styles.error}>{errors.email}</Text>}
-//               </>
-//             )}
-
-//             {/* Password */}
-//             <View style={styles.inputContainer}>
-//               <Icon name="lock" size={18} color="#666" style={styles.inputIcon} />
-//               <TextInput
-//                 placeholder="Password"
-//                 value={password}
-//                 onChangeText={handlePasswordChange}
-//                 secureTextEntry={!showPassword}
-//                 style={styles.input}
-//                 placeholderTextColor="#999"
-//               />
-//               <TouchableOpacity onPress={togglePasswordVisibility} style={styles.eyeIcon}>
-//                 <Icon name={showPassword ? 'eye-slash' : 'eye'} size={20} color="#666" />
-//               </TouchableOpacity>
-//             </View>
-//             {errors.password && <Text style={styles.error}>{errors.password}</Text>}
-
-//             {/* Confirm Password */}
-//             <View style={styles.inputContainer}>
-//               <Icon name="lock" size={18} color="#666" style={styles.inputIcon} />
-//               <TextInput
-//                 placeholder="Confirm Password"
-//                 value={confirmPassword}
-//                 onChangeText={handleConfirmPasswordChange}
-//                 secureTextEntry={!showConfirmPassword}
-//                 style={styles.input}
-//                 placeholderTextColor="#999"
-//               />
-//               <TouchableOpacity onPress={toggleConfirmPasswordVisibility} style={styles.eyeIcon}>
-//                 <Icon name={showConfirmPassword ? 'eye-slash' : 'eye'} size={20} color="#666" />
-//               </TouchableOpacity>
-//             </View>
-//             {errors.confirmPassword && <Text style={styles.error}>{errors.confirmPassword}</Text>}
-
-//             <TouchableOpacity
-//               style={[styles.registerButton]}
-//               onPress={handleSuccessfulRegister}
-//               activeOpacity={0.8}
-//               disabled={isLoading}
-//             >
-//               <Text style={styles.registerButtonText}>
-//                 {isLoading ? 'REGISTERING...' : 'REGISTER'}
-//               </Text>
-//             </TouchableOpacity>
-//           </View>
-
-//           <View style={styles.loginContainer}>
-//             <Text style={styles.loginText}>Already have an account? </Text>
-//             <TouchableOpacity onPress={() => navigation.navigate('Login')}>
-//               <Text style={styles.loginLink}>Login</Text>
-//             </TouchableOpacity>
-//           </View>
-//         </ScrollView>
-//       </KeyboardAvoidingView>
-
-//       {/* Email Verification Modal */}
-//       <Modal
-//         visible={showVerification}
-//         animationType="slide"
-//         transparent={false}
-//         onRequestClose={() => {}}
-//       >
-//         <View style={verificationStyles.container}>
-//           <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
-          
-//           <View style={verificationStyles.content}>
-//             <View style={verificationStyles.iconContainer}>
-//               <Icon name="envelope-o" size={80} color="#3498db" />
-//             </View>
-            
-//             <Text style={verificationStyles.title}>Verify Your Email</Text>
-//             <Text style={verificationStyles.subtitle}>
-//               We've sent a 6-digit verification code to {email}
-//             </Text>
-            
-//             <View style={verificationStyles.codeInputContainer}>
-//               <TextInput
-//                 style={verificationStyles.codeInput}
-//                 placeholder="Enter 6-digit code"
-//                 value={verificationCode}
-//                 onChangeText={setVerificationCode}
-//                 keyboardType="numeric"
-//                 maxLength={6}
-//                 textAlign="center"
-//                 placeholderTextColor="#999"
-//               />
-//             </View>
-            
-//             <TouchableOpacity
-//               style={verificationStyles.verifyButton}
-//               onPress={handleVerificationCodeSubmit}
-//               disabled={isVerifying}
-//             >
-//               <Text style={verificationStyles.verifyButtonText}>
-//                 {isVerifying ? 'VERIFYING...' : 'VERIFY'}
-//               </Text>
-//             </TouchableOpacity>
-            
-//             <View style={verificationStyles.resendContainer}>
-//               <Text style={verificationStyles.resendText}>Didn't receive the code? </Text>
-//               <TouchableOpacity onPress={handleResendCode}>
-//                 <Text style={verificationStyles.resendLink}>Resend</Text>
-//               </TouchableOpacity>
-//             </View>
-//           </View>
-//         </View>
-//       </Modal>
-
-//       {/* Onboarding Modal */}
-//       <Modal
-//         visible={showOnboarding}
-//         animationType="slide"
-//         transparent={false}
-//         onRequestClose={() => { }}
-//       >
-//         <View style={onboardingStyles.modalContainer}>
-//           <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
-
-//           {/* Header */}
-//           <View style={onboardingStyles.header}>
-//             {renderProgressBar()}
-//             <View style={onboardingStyles.placeholder} />
-//           </View>
-
-//           {/* Content */}
-//           <ScrollView style={onboardingStyles.content} showsVerticalScrollIndicator={false}>
-//             {renderSlide()}
-//           </ScrollView>
-
-//           {/* Footer */}
-//           <View style={onboardingStyles.footer}>
-//             {currentSlide > 0 && (
-//               <TouchableOpacity onPress={handlePrevious} style={onboardingStyles.previousButton}>
-//                 <Text style={onboardingStyles.previousText}>Previous</Text>
-//               </TouchableOpacity>
-//             )}
-//             <TouchableOpacity onPress={handleNext} style={onboardingStyles.nextButton}>
-//               <Text style={onboardingStyles.nextText}>
-//                 {currentSlide === 3 ? 'Complete' : 'Next'}
-//               </Text>
-//             </TouchableOpacity>
-//           </View>
-//         </View>
-//       </Modal>
-//     </View>
-//   );
-// }
-
 import React, { useState } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity, Image,
@@ -636,6 +31,7 @@ export default function RegisterScreen({ navigation }: any) {
   const [registrationType, setRegistrationType] = useState<'email' | 'phone'>('email');
   const [verificationCode, setVerificationCode] = useState<string>('');
   const [isVerifying, setIsVerifying] = useState<boolean>(false);
+  const [userId, setUserId] = useState<string>(''); 
 
   const [onboardingData, setOnboardingData] = useState<OnboardingData>({
     firstName: '',
@@ -658,6 +54,7 @@ export default function RegisterScreen({ navigation }: any) {
     handlePasswordChange, handleConfirmPasswordChange,
     togglePasswordVisibility, toggleConfirmPasswordVisibility,
     handleRegister,
+    updateOnboardingData,
   } = useRegister(navigation, setIsLoading);
 
   React.useEffect(() => {
@@ -673,10 +70,12 @@ export default function RegisterScreen({ navigation }: any) {
 
       if (result && result.success) {
         setIsLoading(false);
+        if (result?.userId) {
+          setUserId(result?.userId);
+        }
         setShowVerification(true);
       } else {
         setIsLoading(false);
-        Alert.alert('Registration Failed', 'Please check your information and try again.');
       }
     } catch (error) {
       setIsLoading(false);
@@ -692,10 +91,6 @@ export default function RegisterScreen({ navigation }: any) {
 
     try {
       setIsVerifying(true);
-      // Here you would call your verification API
-      // const verificationResult = await verifyEmailCode(verificationCode);
-      
-      // Simulating API call
       await new Promise(resolve => setTimeout(resolve, 2000));
       
       setIsVerifying(false);
@@ -709,8 +104,6 @@ export default function RegisterScreen({ navigation }: any) {
 
   const handleResendCode = async () => {
     try {
-      // Here you would call your resend verification code API
-      // await resendVerificationCode();
       Alert.alert('Code Sent', 'A new verification code has been sent to your email.');
     } catch (error) {
       Alert.alert('Error', 'Failed to resend verification code. Please try again.');
@@ -738,15 +131,27 @@ export default function RegisterScreen({ navigation }: any) {
 
   const handleCompleteOnboarding = async () => {
     try {
-      console.log('Onboarding data:', onboardingData);
-      setShowOnboarding(false);
-      navigation.navigate('Home');
+      if (userId) {
+        console.log("🚀 ~ handleCompleteOnboarding ~ userId:", userId)
+        const result = await updateOnboardingData(userId, onboardingData);
+        
+        if (result && result.success) {
+          setShowOnboarding(false);
+          navigation.navigate('Home');
+        } else {
+          Alert.alert('Error', 'Failed to save profile information');
+        }
+      } else {
+        console.log('Onboarding data:', onboardingData);
+        setShowOnboarding(false);
+        navigation.navigate('Home');
+      }
     } catch (error) {
       Alert.alert('Error', 'Failed to save profile information');
     }
   };
 
-  const updateOnboardingData = (field: keyof OnboardingData, value: any) => {
+  const updateOnboardingDataLocal = (field: keyof OnboardingData, value: any) => {
     setOnboardingData(prev => ({
       ...prev,
       [field]: value
@@ -797,7 +202,7 @@ export default function RegisterScreen({ navigation }: any) {
                 <TextInput
                   placeholder="First Name"
                   value={onboardingData.firstName}
-                  onChangeText={(text) => updateOnboardingData('firstName', text)}
+                  onChangeText={(text) => updateOnboardingDataLocal('firstName', text)}
                   style={onboardingStyles.input}
                   placeholderTextColor="#999"
                 />
@@ -806,7 +211,7 @@ export default function RegisterScreen({ navigation }: any) {
                 <TextInput
                   placeholder="Last Name"
                   value={onboardingData.lastName}
-                  onChangeText={(text) => updateOnboardingData('lastName', text)}
+                  onChangeText={(text) => updateOnboardingDataLocal('lastName', text)}
                   style={onboardingStyles.input}
                   placeholderTextColor="#999"
                 />
@@ -818,7 +223,7 @@ export default function RegisterScreen({ navigation }: any) {
                 <TextInput
                   placeholder="Age"
                   value={onboardingData.age}
-                  onChangeText={(text) => updateOnboardingData('age', text)}
+                  onChangeText={(text) => updateOnboardingDataLocal('age', text)}
                   style={onboardingStyles.input}
                   keyboardType="numeric"
                   placeholderTextColor="#999"
@@ -828,7 +233,7 @@ export default function RegisterScreen({ navigation }: any) {
                 <TextInput
                   placeholder="Weight (kg)"
                   value={onboardingData.weight}
-                  onChangeText={(text) => updateOnboardingData('weight', text)}
+                  onChangeText={(text) => updateOnboardingDataLocal('weight', text)}
                   style={onboardingStyles.input}
                   keyboardType="numeric"
                   placeholderTextColor="#999"
@@ -840,7 +245,7 @@ export default function RegisterScreen({ navigation }: any) {
               <TextInput
                 placeholder="Height (cm)"
                 value={onboardingData.height}
-                onChangeText={(text) => updateOnboardingData('height', text)}
+                onChangeText={(text) => updateOnboardingDataLocal('height', text)}
                 style={onboardingStyles.input}
                 keyboardType="numeric"
                 placeholderTextColor="#999"
@@ -860,7 +265,7 @@ export default function RegisterScreen({ navigation }: any) {
               <TextInput
                 placeholder="DD/MM/YYYY"
                 value={onboardingData.lastPeriodDate}
-                onChangeText={(text) => updateOnboardingData('lastPeriodDate', text)}
+                onChangeText={(text) => updateOnboardingDataLocal('lastPeriodDate', text)}
                 style={onboardingStyles.input}
                 placeholderTextColor="#999"
               />
@@ -872,7 +277,7 @@ export default function RegisterScreen({ navigation }: any) {
                 <TextInput
                   placeholder="28"
                   value={onboardingData.cycleLength}
-                  onChangeText={(text) => updateOnboardingData('cycleLength', text)}
+                  onChangeText={(text) => updateOnboardingDataLocal('cycleLength', text)}
                   style={onboardingStyles.input}
                   keyboardType="numeric"
                   placeholderTextColor="#999"
@@ -883,7 +288,7 @@ export default function RegisterScreen({ navigation }: any) {
                 <TextInput
                   placeholder="5"
                   value={onboardingData.periodLength}
-                  onChangeText={(text) => updateOnboardingData('periodLength', text)}
+                  onChangeText={(text) => updateOnboardingDataLocal('periodLength', text)}
                   style={onboardingStyles.input}
                   keyboardType="numeric"
                   placeholderTextColor="#999"
@@ -1165,7 +570,9 @@ export default function RegisterScreen({ navigation }: any) {
           {/* Header */}
           <View style={onboardingStyles.header}>
             {renderProgressBar()}
-            <View style={onboardingStyles.placeholder} />
+            <TouchableOpacity onPress={handleSkip} style={onboardingStyles.skipButton}>
+              <Text style={onboardingStyles.skipText}>Skip</Text>
+            </TouchableOpacity>
           </View>
 
           {/* Content */}

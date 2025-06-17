@@ -14,27 +14,13 @@ import {
   ListRenderItem,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useLocation } from './../../Context/LocationContext'; 
-
-interface Doctor {
-  id: string;
-  name: string;
-  specialty: string;
-  experience: number;
-  rating: number;
-  distance: number;
-  phone: string;
-  email: string;
-  address: string;
-  consultationFee: number;
-  availability: string;
-  languages: string[];
-  qualifications: string;
-  hospital: string;
-  about: string;
-  services: string[];
-  awards: string[];
-}
+import { useLocation } from './../../Context/LocationContext';
+import {
+  getNearbyDoctors,
+  getSpecialties,
+  initiateCall,
+  Doctor
+} from '../../controller/doctor.controller';
 
 interface DoctorsScreenProps {
   navigation: any;
@@ -47,136 +33,131 @@ const DoctorsScreen: React.FC<DoctorsScreenProps> = ({ navigation }) => {
   const [loading, setLoading] = useState<boolean>(true);
   const [refreshing, setRefreshing] = useState<boolean>(false);
   const [selectedSpecialty, setSelectedSpecialty] = useState<string>('All');
+  const [specialties, setSpecialties] = useState<string[]>([
+    'All',
+    'General Physician',
+    'Cardiologist',
+    'Dermatologist',
+    'Gynecologist',
+    'Endocrinologist',
+    'Pediatrician',
+    'Orthopedic',
+    'Psychiatrist',
+    'Ophthalmologist'
+  ]);
 
-  const { 
-    location, 
-    getCurrentLocation, 
-    sortDoctorsByDistance, 
-    getNearbyDoctors,
-    loading: locationLoading 
+  const {
+    location,
+    getCurrentLocation,
+    sortDoctorsByDistance,
+    getNearbyDoctors: locationGetNearbyDoctors,
+    loading: locationLoading
   } = useLocation();
 
-  const mockDoctors: Doctor[] = [
-    {
-      id: '1',
-      name: 'Dr. Priya Sharma',
-      specialty: 'Gynecologist',
-      experience: 12,
-      rating: 4.8,
-      distance: 1.2,
-      phone: '+91-9876543210',
-      email: 'dr.priya@healthcenter.com',
-      address: 'Apollo Hospital, Sector 26, Bhopal',
-      consultationFee: 800,
-      availability: 'Mon-Sat 10AM-6PM',
-      languages: ['Hindi', 'English'],
-      qualifications: 'MBBS, MD (Gynecology)',
-      hospital: 'Apollo Hospital',
-      about: 'Dr. Priya Sharma is a highly experienced gynecologist with over 12 years of practice in women\'s health. She specializes in reproductive health, pregnancy care, and gynecological surgeries.',
-      services: ['Prenatal Care', 'Gynecological Surgery', 'Infertility Treatment', 'Menopause Management'],
-      awards: ['Best Gynecologist Award 2023', 'Excellence in Women\'s Health 2022'],
-    },
-    {
-      id: '2',
-      name: 'Dr. Anjali Gupta',
-      specialty: 'Gynecologist',
-      experience: 8,
-      rating: 4.6,
-      distance: 2.1,
-      phone: '+91-9876543211',
-      email: 'dr.anjali@fortis.com',
-      address: 'Fortis Hospital, New Market, Bhopal',
-      consultationFee: 600,
-      availability: 'Mon-Fri 9AM-5PM',
-      languages: ['Hindi', 'English'],
-      qualifications: 'MBBS, MS (Gynecology)',
-      hospital: 'Fortis Hospital',
-      about: 'Dr. Anjali Gupta is a dedicated gynecologist focusing on minimally invasive procedures and women\'s wellness.',
-      services: ['Laparoscopic Surgery', 'Cancer Screening', 'Family Planning', 'Adolescent Health'],
-      awards: ['Young Achiever in Medicine 2023'],
-    },
-    {
-      id: '3',
-      name: 'Dr. Kavita Patel',
-      specialty: 'Endocrinologist',
-      experience: 15,
-      rating: 4.9,
-      distance: 3.5,
-      phone: '+91-9876543212',
-      email: 'dr.kavita@aiims.edu',
-      address: 'AIIMS Bhopal, Saket Nagar',
-      consultationFee: 1000,
-      availability: 'Tue-Sat 11AM-4PM',
-      languages: ['Hindi', 'English'],
-      qualifications: 'MBBS, MD (Endocrinology)',
-      hospital: 'AIIMS Bhopal',
-      about: 'Dr. Kavita Patel is a renowned endocrinologist specializing in diabetes, thyroid disorders, and hormonal imbalances.',
-      services: ['Diabetes Management', 'Thyroid Treatment', 'PCOS Treatment', 'Hormone Therapy'],
-      awards: ['Excellence in Endocrinology 2023', 'Research Excellence Award 2022'],
-    },
-    {
-      id: '4',
-      name: 'Dr. Meera Singh',
-      specialty: 'General Physician',
-      experience: 6,
-      rating: 4.4,
-      distance: 0.8,
-      phone: '+91-9876543213',
-      email: 'dr.meera@maxhealthcare.com',
-      address: 'Max Healthcare, MP Nagar, Bhopal',
-      consultationFee: 400,
-      availability: 'Mon-Sun 8AM-8PM',
-      languages: ['Hindi', 'English'],
-      qualifications: 'MBBS, MD (Medicine)',
-      hospital: 'Max Healthcare',
-      about: 'Dr. Meera Singh is a compassionate general physician with expertise in preventive care and chronic disease management.',
-      services: ['General Consultation', 'Health Checkups', 'Chronic Disease Management', 'Preventive Care'],
-      awards: ['Patient\'s Choice Award 2023'],
-    },
-  ];
-
-  const specialties: string[] = ['All', 'Gynecologist', 'Endocrinologist', 'General Physician'];
-
   useEffect(() => {
-    loadDoctors();
+    loadInitialData();
   }, []);
 
   useEffect(() => {
+    if (location) {
+      console.log('📍 Location updated, fetching doctors:', location);
+      loadDoctors();
+    }
+  }, [location]);
+
+  useEffect(() => {
     filterDoctors();
-  }, [searchQuery, selectedSpecialty, doctors, location]);
+  }, [searchQuery, selectedSpecialty, doctors]);
+
+  const loadInitialData = async (): Promise<void> => {
+    console.log('🚀 Loading initial data...');
+    try {
+      await loadSpecialties();
+
+      await loadDoctors();
+    } catch (error) {
+      console.error('❌ Error loading initial data:', error);
+    }
+  };
+
+  const loadSpecialties = async (): Promise<void> => {
+    try {
+      console.log('🔍 Loading specialties...');
+      const specialtiesData = await getSpecialties();
+
+      if (specialtiesData && specialtiesData.length > 0) {
+        const specialtyNames = specialtiesData.map((spec: any) => spec.name);
+        console.log('✅ Loaded specialties:', specialtyNames);
+        setSpecialties(specialtyNames);
+      }
+    } catch (error) {
+      console.error('❌ Error loading specialties:', error);
+    }
+  };
 
   const loadDoctors = async (): Promise<void> => {
+    if (!location) {
+      console.log('⏳ No location available, waiting...');
+      setLoading(false);
+      return;
+    }
+
     setLoading(true);
     try {
-      // Simulate API call
-      setTimeout(() => {
-        // Sort doctors by distance if location is available
-        const sortedDoctors = location 
-          ? sortDoctorsByDistance(mockDoctors, location)
-          : mockDoctors;
-        
-        setDoctors(sortedDoctors);
-        setLoading(false);
-      }, 1000);
+      console.log('🔍 Loading doctors for location:', location);
+
+      const doctorsData = await getNearbyDoctors(
+        location.latitude,
+        location.longitude,
+        500000, // 500km radius
+        selectedSpecialty === 'All' ? undefined : selectedSpecialty
+      );
+
+      console.log('✅ Loaded doctors:', doctorsData.length);
+      setDoctors(doctorsData);
+
     } catch (error) {
+      console.error('❌ Error loading doctors:', error);
+      Alert.alert(
+        'Error',
+        'Failed to load doctors. Please check your internet connection and try again.',
+        [
+          { text: 'OK' },
+          { text: 'Retry', onPress: loadDoctors }
+        ]
+      );
+    } finally {
       setLoading(false);
-      Alert.alert('Error', 'Failed to load doctors');
     }
   };
 
   const onRefresh = async (): Promise<void> => {
+    console.log('🔄 Refreshing data...');
     setRefreshing(true);
-    // Refresh location and doctors
-    await getCurrentLocation();
-    await loadDoctors();
-    setRefreshing(false);
+    try {
+      await getCurrentLocation();
+
+      await loadSpecialties();
+      await loadDoctors();
+
+    } catch (error) {
+      console.error('❌ Error refreshing data:', error);
+      Alert.alert('Error', 'Failed to refresh data');
+    } finally {
+      setRefreshing(false);
+    }
   };
 
   const filterDoctors = (): void => {
+    console.log('🔍 Filtering doctors with:', { searchQuery, selectedSpecialty, totalDoctors: doctors.length });
+
     let filtered = doctors;
 
     if (selectedSpecialty !== 'All') {
-      filtered = filtered.filter(doctor => doctor.specialty === selectedSpecialty);
+      filtered = filtered.filter(doctor =>
+        doctor.specialty.toLowerCase().includes(selectedSpecialty.toLowerCase())
+      );
+      console.log('📋 After specialty filter:', filtered.length);
     }
 
     if (searchQuery) {
@@ -184,24 +165,43 @@ const DoctorsScreen: React.FC<DoctorsScreenProps> = ({ navigation }) => {
         doctor.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         doctor.specialty.toLowerCase().includes(searchQuery.toLowerCase())
       );
+      console.log('🔍 After search filter:', filtered.length);
     }
 
-    // Sort by distance if location is available
     if (location) {
-      filtered = sortDoctorsByDistance(filtered, location);
+      filtered.sort((a, b) => a.distance - b.distance);
+      console.log('📍 Sorted by distance');
     } else {
-      // Fallback sorting by rating if no location
       filtered.sort((a, b) => b.rating - a.rating);
+      console.log('⭐ Sorted by rating');
     }
 
     setFilteredDoctors(filtered);
+    console.log('✅ Final filtered doctors:', filtered.length);
   };
 
-  const handleCall = (phoneNumber: string): void => {
-    Linking.openURL(`tel:${phoneNumber}`);
+  const handleCall = async (doctor: Doctor): Promise<void> => {
+    try {
+      console.log('📞 Handling call for doctor:', doctor.name);
+
+      const callResponse = await initiateCall(doctor.id);
+
+      if (callResponse.phone) {
+        console.log('📞 Calling:', callResponse.phone);
+        Linking.openURL(`tel:${callResponse.phone}`);
+      } else {
+        console.log('📞 Fallback calling:', doctor.phone);
+        Linking.openURL(`tel:${doctor.phone}`);
+      }
+
+    } catch (error) {
+      console.error('❌ Error initiating call:', error);
+      Alert.alert('Error', 'Failed to initiate call');
+    }
   };
 
   const handleEmail = (email: string): void => {
+    console.log('📧 Opening email for:', email);
     Linking.openURL(`mailto:${email}`);
   };
 
@@ -244,7 +244,7 @@ const DoctorsScreen: React.FC<DoctorsScreenProps> = ({ navigation }) => {
       <View style={styles.actionButtons}>
         <TouchableOpacity
           style={[styles.actionButton, styles.callButton]}
-          onPress={() => handleCall(item.phone)}
+          onPress={() => handleCall(item)}
         >
           <Ionicons name="call" size={16} color="#FFF" />
           <Text style={styles.buttonText}>Call</Text>
@@ -266,7 +266,10 @@ const DoctorsScreen: React.FC<DoctorsScreenProps> = ({ navigation }) => {
         styles.specialtyChip,
         selectedSpecialty === item && styles.selectedSpecialty
       ]}
-      onPress={() => setSelectedSpecialty(item)}
+      onPress={() => {
+        console.log('🏷️ Selected specialty:', item);
+        setSelectedSpecialty(item);
+      }}
     >
       <Text style={[
         styles.specialtyText,
@@ -277,20 +280,57 @@ const DoctorsScreen: React.FC<DoctorsScreenProps> = ({ navigation }) => {
     </TouchableOpacity>
   );
 
+  const getEmptyStateMessage = () => {
+    if (loading) {
+      return {
+        title: 'Loading doctors...',
+        subtitle: 'Please wait while we find doctors near you'
+      };
+    }
+
+    if (!location) {
+      return {
+        title: 'Location required',
+        subtitle: 'Please enable location to find nearby doctors'
+      };
+    }
+
+    if (doctors.length === 0) {
+      return {
+        title: 'No doctors found',
+        subtitle: 'Try expanding your search area or check your connection'
+      };
+    }
+
+    return {
+      title: 'No doctors match your filters',
+      subtitle: 'Try adjusting your search or filters'
+    };
+  };
+
+  const emptyState = getEmptyStateMessage();
+
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar backgroundColor="#3498db" barStyle="light-content" />
-      
+
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Find Doctors</Text>
         <Text style={styles.headerSubtitle}>
-          {location 
-            ? 'Women\'s Health Specialists Near You' 
+          {location
+            ? 'Women\'s Health Specialists Near You'
             : 'Women\'s Health Specialists in Bhopal'
           }
         </Text>
         {locationLoading && (
           <Text style={styles.locationStatus}>Getting your location...</Text>
+        )}
+        {!location && !locationLoading && (
+          <TouchableOpacity onPress={getCurrentLocation}>
+            <Text style={[styles.locationStatus, { textDecorationLine: 'underline' }]}>
+              Tap to enable location
+            </Text>
+          </TouchableOpacity>
         )}
       </View>
 
@@ -302,6 +342,16 @@ const DoctorsScreen: React.FC<DoctorsScreenProps> = ({ navigation }) => {
           value={searchQuery}
           onChangeText={setSearchQuery}
           placeholderTextColor="#999"
+          underlineColorAndroid="transparent"
+          style={[
+            styles.searchInput,
+            {
+              borderWidth: 0,
+              borderColor: 'transparent',
+              backgroundColor: 'transparent',
+              outlineWidth: 0,
+            }
+          ]}
         />
       </View>
 
@@ -324,13 +374,26 @@ const DoctorsScreen: React.FC<DoctorsScreenProps> = ({ navigation }) => {
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.doctorsList}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            colors={['#3498db']}
+            tintColor="#3498db"
+          />
         }
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
             <Ionicons name="medical" size={64} color="#E0E0E0" />
-            <Text style={styles.emptyText}>No doctors found</Text>
-            <Text style={styles.emptySubtext}>Try adjusting your search or filters</Text>
+            <Text style={styles.emptyText}>{emptyState.title}</Text>
+            <Text style={styles.emptySubtext}>{emptyState.subtitle}</Text>
+            {!location && !locationLoading && (
+              <TouchableOpacity
+                style={styles.enableLocationButton}
+                onPress={getCurrentLocation}
+              >
+                <Text style={styles.enableLocationText}>Enable Location</Text>
+              </TouchableOpacity>
+            )}
           </View>
         }
       />
@@ -390,6 +453,7 @@ const styles = StyleSheet.create({
     height: 48,
     fontSize: 16,
     color: '#333',
+    borderColor: 'transparent',
   },
   filterSection: {
     marginBottom: 16,
@@ -403,7 +467,7 @@ const styles = StyleSheet.create({
   },
   specialtyListContent: {
     paddingHorizontal: 20,
-    paddingRight: 40, // Extra padding to ensure last item is visible
+    paddingRight: 40,
   },
   specialtyChip: {
     backgroundColor: '#FFF',
@@ -417,7 +481,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
     shadowRadius: 2,
-    minWidth: 100, // Ensure minimum width for readability
+    minWidth: 100,
     alignItems: 'center',
   },
   selectedSpecialty: {
@@ -566,6 +630,19 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#BBB',
     marginTop: 4,
+    textAlign: 'center',
+    paddingHorizontal: 40,
+  },
+  enableLocationButton: {
+    backgroundColor: '#3498db',
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 8,
+    marginTop: 16,
+  },
+  enableLocationText: {
+    color: '#FFF',
+    fontWeight: '600',
   },
 });
 
