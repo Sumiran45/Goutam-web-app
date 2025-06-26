@@ -18,15 +18,13 @@ const NewArticleModal = ({ visible, onClose, onSave }:any) => {
   const [content, setContent] = useState('');
   const [youtubeUrl, setYoutubeUrl] = useState('');
 
-  // Function to validate YouTube URL
   const validateYouTubeUrl = (url: string) => {
-    if (!url.trim()) return true; // Empty URL is valid (optional field)
+    if (!url.trim()) return true; 
     
     const youtubeRegex = /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\/.+/;
     return youtubeRegex.test(url);
   };
 
-  // Function to extract YouTube video ID
   const extractYouTubeId = (url: string) => {
     const regExp = /^.*((youtu.be\/)|(v\/)|(\/u\/\w\/)|(embed\/)|(watch\?))\??v?=?([^#&?]*).*/;
     const match = url.match(regExp);
@@ -39,14 +37,12 @@ const NewArticleModal = ({ visible, onClose, onSave }:any) => {
       return;
     }
 
-    // Validate YouTube URL if provided
     if (youtubeUrl.trim() && !validateYouTubeUrl(youtubeUrl)) {
       Alert.alert('Error', 'Please enter a valid YouTube URL');
       return;
     }
   
     try {
-      // Include YouTube URL in the article data if provided
       const articleData = {
         title: title.trim(),
         content: content.trim(),
