@@ -27,6 +27,8 @@ interface User {
   articles: string[];
 }
 
+// Assuming Article interface already has videoUrl property
+// If not, you may need to update the Article interface in your controller
 interface EnhancedArticle extends Article {
   videoUrl?: string;
 }
@@ -58,11 +60,9 @@ export const ArticlesScreen = () => {
 
       const allArticles = await fetchArticles();
 
-      const enhancedArticles = allArticles.map((article:any, index:any) => ({
+      const enhancedArticles = allArticles.map((article: any) => ({
         ...article,
-        videoUrl: index % 3 === 0 ? 'https://youtu.be/JMeKBKe2NVw?si=KiVesVk6tYacBsC9' :
-          index % 3 === 1 ? 'https://youtu.be/dQw4w9WgXcQ' :
-            index % 3 === 2 ? 'https://youtu.be/9bZkp7q19f0' : undefined
+        videoUrl: article.videoUrl || article.video_url || article.video || null
       }));
 
       setArticles(enhancedArticles);

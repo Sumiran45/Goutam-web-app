@@ -41,21 +41,3 @@ export const deleteUser = async (userID: string) => {
       throw error;
     }
   };
-
-  export const deleteArrticle = async (articleID: string) => {
-    try {
-    //   const token = await AsyncStorage.getItem('token');
-    //   if (!token) throw new Error('No token found');
-  
-      const response = await api.delete(`/articles/${articleID}`, {
-        headers: {
-        //   Authorization: `Bearer ${token}`,
-        },
-      });
-  
-      return response.data;
-    } catch (error) {
-      console.error('Error deleting Article:', error);
-      throw error;
-    }
-  };

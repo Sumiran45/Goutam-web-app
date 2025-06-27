@@ -21,7 +21,7 @@ import { globalStyles } from '../../../../../styles/admin/global';
 import { colors, moderateScale } from '../../../../../styles/admin/theme';
 import styles from '../../../../../styles/admin/article.style';
 import { fetchArticles } from '../../../../../controller/Articles.controller';
-import { deleteArrticle } from '../../../../../Api/AdminDasboard.api';
+import { deleteArticle } from '../../../../../controller/Articles.controller';
 
 const ArticlesScreen = ({ navigation }:any) => {
   const [articles, setArticles] = useState<any[]>([]);;
@@ -111,7 +111,7 @@ const ArticlesScreen = ({ navigation }:any) => {
 
   const handleDeleteArticle = async (id:any) => {
     try {
-          await deleteArrticle(id);// call API to delete user
+          await deleteArticle(id);
       
           // update state after successful deletion
           const updatedArticles = articles.filter(article => article.id !== id);
