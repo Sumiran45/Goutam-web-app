@@ -112,13 +112,9 @@ const ArticlesScreen = ({ navigation }:any) => {
   const handleDeleteArticle = async (id:any) => {
     try {
           await deleteArticle(id);
-      
-          // update state after successful deletion
           const updatedArticles = articles.filter(article => article.id !== id);
           setArticles(updatedArticles);
-          // setFilteredUsers(updatedUsers);
       
-          // Alert.alert('Success', `User ${selectedUser.name} has been deleted`);
         } catch (error) {
           Alert.alert('Error', 'Failed to delete Article. Please try again.');
         }

@@ -12,6 +12,8 @@ import {
 } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome5';
 import { colors, moderateScale } from '../../../../../styles/admin/theme';
+import { addProduct, Product } from '../../../../../controller/Product.controller';
+import CommonModal from '../../../home/tabs/modal';
 
 interface Vendor {
   name: string;
@@ -20,9 +22,10 @@ interface Vendor {
 
 interface AddProductScreenProps {
   navigation: any;
+  route?: any;
 }
 
-const AddProductScreen: React.FC<AddProductScreenProps> = ({ navigation }) => {
+const AddProductScreen: React.FC<AddProductScreenProps> = ({ navigation, route }) => {
   const [productName, setProductName] = useState('');
   const [brand, setBrand] = useState('');
   const [price, setPrice] = useState('');
@@ -32,6 +35,16 @@ const AddProductScreen: React.FC<AddProductScreenProps> = ({ navigation }) => {
   const [inStock, setInStock] = useState(true);
   const [vendors, setVendors] = useState<Vendor[]>([{ name: '', link: '' }]);
   const [isLoading, setIsLoading] = useState(false);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [modalConfig, setModalConfig] = useState({
+    title: '',
+    message: '',
+    onConfirm: () => { },
+    onCancel: () => { },
+    confirmText: 'OK',
+    cancelText: 'Cancel',
+    onlyOk: false,
+  });
 
   const categories = [
     'Sanitary Pads',
@@ -42,6 +55,16 @@ const AddProductScreen: React.FC<AddProductScreenProps> = ({ navigation }) => {
     'Pain Relief',
     'Intimate Hygiene',
   ];
+
+  const showModal = (config: Partial<typeof modalConfig>) => {
+    setModalConfig({
+      ...modalConfig,
+      ...config,
+      onConfirm: config.onConfirm || (() => setModalVisible(false)),
+      onCancel: config.onCancel || (() => setModalVisible(false)),
+    });
+    setModalVisible(true);
+  };
 
   const addVendor = () => {
     setVendors([...vendors, { name: '', link: '' }]);
@@ -91,39 +114,78 @@ const AddProductScreen: React.FC<AddProductScreenProps> = ({ navigation }) => {
     return true;
   };
 
+  const navigateBackToProductDetail = (updatedProduct?: Product) => {
+    if (updatedProduct) {
+      navigation.setParams({
+        product: updatedProduct,
+        isUpdated: true
+      });
+    }
+    navigation.goBack();
+  };
+
   const handleSave = async () => {
     if (!validateForm()) return;
 
     setIsLoading(true);
-    
-    // Simulate API call
-    setTimeout(() => {
-      setIsLoading(false);
-      Alert.alert('Success', 'Product added successfully!', [
-        {
-          text: 'OK',
-          onPress: () => navigation.goBack(),
+
+    try {
+      const validVendors = vendors.filter(v => v.name.trim() && v.link.trim());
+
+      const newProduct = await addProduct(
+        productName,
+        brand,
+        parseFloat(price),
+        imageUrl,
+        validVendors,
+        description,
+        category,
+        inStock
+      );
+
+      console.log('Product created successfully:', newProduct);
+      showModal({
+        title: 'Success',
+        message: 'Product added successfully!',
+        onlyOk: true,
+        onConfirm: () => {
+          setModalVisible(false);
+          navigation.navigate('ProductScreen', { refresh: true });
         },
-      ]);
-    }, 1500);
+      });
+
+    } catch (error: any) {
+      showModal({
+        title: 'Error',
+        message: error.message || 'Failed to add product. Please try again.',
+        onlyOk: true,
+        onConfirm: () => setModalVisible(false),
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleBack = () => {
+    navigation.goBack();
   };
 
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+        <TouchableOpacity onPress={handleBack} style={styles.backButton}>
           <Icon name="arrow-left" size={20} color={colors.text.primary} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Add New Product</Text>
         <TouchableOpacity onPress={handleSave} style={styles.saveButton} disabled={isLoading}>
-          <Text style={styles.saveButtonText}>Save</Text>
+          <Text style={styles.saveButtonText}>{isLoading ? 'Saving...' : 'Save'}</Text>
         </TouchableOpacity>
       </View>
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Basic Information</Text>
-          
+
           <View style={styles.inputGroup}>
             <Text style={styles.label}>Product Name *</Text>
             <TextInput
@@ -132,6 +194,19 @@ const AddProductScreen: React.FC<AddProductScreenProps> = ({ navigation }) => {
               onChangeText={setProductName}
               placeholder="Enter product name"
               placeholderTextColor={colors.text.secondary}
+              editable={!isLoading}
+            />
+          </View>
+
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>Brand *</Text>
+            <TextInput
+              style={styles.input}
+              value={brand}
+              onChangeText={setBrand}
+              placeholder="Enter brand name"
+              placeholderTextColor={colors.text.secondary}
+              editable={!isLoading}
             />
           </View>
 
@@ -144,6 +219,7 @@ const AddProductScreen: React.FC<AddProductScreenProps> = ({ navigation }) => {
               placeholder="Enter price"
               placeholderTextColor={colors.text.secondary}
               keyboardType="numeric"
+              editable={!isLoading}
             />
           </View>
 
@@ -158,6 +234,7 @@ const AddProductScreen: React.FC<AddProductScreenProps> = ({ navigation }) => {
                     category === cat && styles.categoryChipSelected
                   ]}
                   onPress={() => setCategory(cat)}
+                  disabled={isLoading}
                 >
                   <Text style={[
                     styles.categoryText,
@@ -179,6 +256,7 @@ const AddProductScreen: React.FC<AddProductScreenProps> = ({ navigation }) => {
               placeholder="Enter image URL"
               placeholderTextColor={colors.text.secondary}
               autoCapitalize="none"
+              editable={!isLoading}
             />
           </View>
 
@@ -192,6 +270,7 @@ const AddProductScreen: React.FC<AddProductScreenProps> = ({ navigation }) => {
               placeholderTextColor={colors.text.secondary}
               multiline
               numberOfLines={4}
+              editable={!isLoading}
             />
           </View>
 
@@ -202,6 +281,7 @@ const AddProductScreen: React.FC<AddProductScreenProps> = ({ navigation }) => {
               onValueChange={setInStock}
               trackColor={{ false: colors.border.light, true: colors.primary + '40' }}
               thumbColor={inStock ? colors.primary : colors.text.secondary}
+              disabled={isLoading}
             />
           </View>
         </View>
@@ -209,7 +289,11 @@ const AddProductScreen: React.FC<AddProductScreenProps> = ({ navigation }) => {
         <View style={styles.section}>
           <View style={styles.vendorHeader}>
             <Text style={styles.sectionTitle}>Vendors</Text>
-            <TouchableOpacity onPress={addVendor} style={styles.addVendorButton}>
+            <TouchableOpacity
+              onPress={addVendor}
+              style={styles.addVendorButton}
+              disabled={isLoading}
+            >
               <Icon name="plus" size={14} color={colors.primary} />
               <Text style={styles.addVendorText}>Add More</Text>
             </TouchableOpacity>
@@ -223,12 +307,13 @@ const AddProductScreen: React.FC<AddProductScreenProps> = ({ navigation }) => {
                   <TouchableOpacity
                     onPress={() => removeVendor(index)}
                     style={styles.removeVendorButton}
+                    disabled={isLoading}
                   >
                     <Icon name="times" size={16} color={colors.error} />
                   </TouchableOpacity>
                 )}
               </View>
-              
+
               <View style={styles.inputGroup}>
                 <Text style={styles.label}>Vendor Name *</Text>
                 <TextInput
@@ -237,6 +322,7 @@ const AddProductScreen: React.FC<AddProductScreenProps> = ({ navigation }) => {
                   onChangeText={(value) => updateVendor(index, 'name', value)}
                   placeholder="e.g., Amazon, Flipkart, Nykaa"
                   placeholderTextColor={colors.text.secondary}
+                  editable={!isLoading}
                 />
               </View>
 
@@ -249,6 +335,7 @@ const AddProductScreen: React.FC<AddProductScreenProps> = ({ navigation }) => {
                   placeholder="https://example.com/product"
                   placeholderTextColor={colors.text.secondary}
                   autoCapitalize="none"
+                  editable={!isLoading}
                 />
               </View>
             </View>
@@ -272,6 +359,16 @@ const AddProductScreen: React.FC<AddProductScreenProps> = ({ navigation }) => {
           </TouchableOpacity>
         </View>
       </ScrollView>
+      <CommonModal
+        visible={modalVisible}
+        title={modalConfig.title}
+        message={modalConfig.message}
+        onConfirm={modalConfig.onConfirm}
+        onCancel={modalConfig.onCancel}
+        confirmText={modalConfig.confirmText}
+        cancelText={modalConfig.cancelText}
+        onlyOk={modalConfig.onlyOk}
+      />
     </SafeAreaView>
   );
 };

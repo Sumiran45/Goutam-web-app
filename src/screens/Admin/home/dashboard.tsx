@@ -13,12 +13,14 @@ import { colors } from '../../../styles/admin/theme';
 import { recentActivities } from '../../../components/Data/activity';
 import { fetchUsers } from '../../../Api/AdminDasboard.api';
 import { fetchArticles } from '../../../controller/Articles.controller';
+import { fetchProducts } from '../../../controller/Product.controller';
 
 const DashboardContent = () => {
   const navigation = useNavigation();
   const [userCount, setUserCount] = useState<number | null>(null);
   const [articleCount, setArticleCount] = useState<number | null>(null);
-
+  const [productCount, setProductCount] = useState<number>(0);
+  
   useEffect(() => {
     const getUsers = async () => {
       try {
@@ -45,6 +47,18 @@ const DashboardContent = () => {
     getUsers();
     getArticles();
   }, []);
+
+    useEffect(() => {
+    const loadProductCount = async () => {
+      try {
+        const products = await fetchProducts();
+        setProductCount(products.length);
+      } catch (error) {
+        setProductCount(0);
+      }
+    };
+    loadProductCount();
+  }, []);
   const navigateToAllActivities = () => {
     navigation.navigate('AllActivities' as never);
   };
@@ -57,7 +71,7 @@ const DashboardContent = () => {
       <View style={styles.statBoxContainer}>
         <StatBox label="Total Users" value={userCount !== null ? userCount.toString() : '...'} icon="users" color={colors.primary} />
         <StatBox label="Articles" value={articleCount !== null ? articleCount.toString() : '...'} icon="file-alt" color={colors.secondary} />
-        <StatBox label="Products" value="63" icon="box" color={colors.warning} />
+        <StatBox label="Products" value={productCount.toString()} icon="box" color={colors.warning} />
       </View>
 
       <QuickActions />

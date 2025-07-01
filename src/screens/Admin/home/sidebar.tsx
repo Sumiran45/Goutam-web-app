@@ -70,12 +70,6 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, closeSidebar
           onPress={() => handleNavPress('products')}
         />
         <NavItem
-          icon="chart-bar"
-          label="Analytics"
-          isActive={activeTab === 'analytics'}
-          onPress={() => handleNavPress('analytics')}
-        />
-        <NavItem
           icon="cog"
           label="Settings"
           isActive={activeTab === 'settings'}

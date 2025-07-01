@@ -5,6 +5,7 @@ import { colors, moderateScale } from '../../../styles/admin/theme';
 import { styles } from '../../../styles/admin/admin.style';
 import NewArticleModal from './tabs/article/newArticleModal'; 
 import AddUserModal from './tabs/user'; 
+import { useNavigation } from '@react-navigation/native';
 
 const QuickActions = ({ 
   onArticleAdded, 
@@ -13,6 +14,7 @@ const QuickActions = ({
   onArticleAdded?: (article: any) => void;
   onUserAdded?: (user: any) => void;
 }) => {
+  const navigation = useNavigation();
   const [isNewArticleModalVisible, setIsNewArticleModalVisible] = useState(false);
   const [isAddUserModalVisible, setIsAddUserModalVisible] = useState(false);
 
@@ -64,7 +66,7 @@ const QuickActions = ({
       label: 'Add Product', 
       color: colors.warning,
       onPress: () => {
-        console.log('Add Product pressed');
+       (navigation as any).navigate('AddProductScreen');
       }
     },
     { 

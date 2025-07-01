@@ -12,45 +12,24 @@ import {
 } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome5';
 import { colors, moderateScale } from '../../../../../styles/admin/theme';
+import CommonModal from '../../tabs/modal';
+import { updateProduct, Product } from '../../../../../controller/Product.controller';
 
-interface Vendor {
-  name: string;
-  link: string;
-}
-
-interface Product {
-  id: string;
-  name: string;
-  brand: string;
-  price: number;
-  image: string;
-  vendors: Vendor[];
-  description: string;
-  category: string;
-  inStock: boolean;
-}
-
-interface EditProductScreenProps {
-  navigation: any;
-  route: {
-    params: {
-      product: Product;
-    };
-  };
-}
-
-const EditProductScreen: React.FC<EditProductScreenProps> = ({ navigation, route }) => {
+const EditProductScreen = ({ navigation, route }: any) => {
   const { product } = route.params;
-  
-  const [productName, setProductName] = useState(product.name);
-  const [brand, setBrand] = useState(product.brand);
-  const [price, setPrice] = useState(product.price.toString());
-  const [description, setDescription] = useState(product.description);
-  const [category, setCategory] = useState(product.category);
-  const [imageUrl, setImageUrl] = useState(product.image);
-  const [inStock, setInStock] = useState(product.inStock);
-  const [vendors, setVendors] = useState<Vendor[]>(product.vendors);
+
+  const [form, setForm] = useState(product);
   const [isLoading, setIsLoading] = useState(false);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [modalConfig, setModalConfig] = useState({
+    title: '',
+    message: '',
+    onConfirm: () => { },
+    onCancel: () => { },
+    confirmText: 'OK',
+    cancelText: 'Cancel',
+    onlyOk: false,
+  });
 
   const categories = [
     'Sanitary Pads',
@@ -62,46 +41,63 @@ const EditProductScreen: React.FC<EditProductScreenProps> = ({ navigation, route
     'Intimate Hygiene',
   ];
 
-  const addVendor = () => {
-    setVendors([...vendors, { name: '', link: '' }]);
+  const handleChange = (key: any, value: any) => {
+    setForm({ ...form, [key]: value });
   };
 
-  const removeVendor = (index: number) => {
-    if (vendors.length > 1) {
-      const newVendors = vendors.filter((_, i) => i !== index);
-      setVendors(newVendors);
+  const addVendor = () => {
+    setForm({
+      ...form,
+      vendors: [...form.vendors, { name: '', link: '' }]
+    });
+  };
+
+  const removeVendor = (index: any) => {
+    if (form.vendors.length > 1) {
+      const newVendors = form.vendors.filter((_: any, i: any) => i !== index);
+      setForm({ ...form, vendors: newVendors });
     }
   };
 
-  const updateVendor = (index: number, field: 'name' | 'link', value: string) => {
-    const newVendors = [...vendors];
+  const updateVendor = (index: any, field: any, value: any) => {
+    const newVendors = [...form.vendors];
     newVendors[index][field] = value;
-    setVendors(newVendors);
+    setForm({ ...form, vendors: newVendors });
+  };
+
+  const showModal = (config: any) => {
+    setModalConfig({
+      ...modalConfig,
+      ...config,
+      onConfirm: config.onConfirm || (() => setModalVisible(false)),
+      onCancel: config.onCancel || (() => setModalVisible(false)),
+    });
+    setModalVisible(true);
   };
 
   const validateForm = () => {
-    if (!productName.trim()) {
+    if (!form.name.trim()) {
       Alert.alert('Error', 'Please enter product name');
       return false;
     }
-    if (!brand.trim()) {
+    if (!form.brand.trim()) {
       Alert.alert('Error', 'Please enter brand name');
       return false;
     }
-    if (!price.trim() || isNaN(Number(price))) {
+    if (!form.price || isNaN(Number(form.price))) {
       Alert.alert('Error', 'Please enter a valid price');
       return false;
     }
-    if (!category.trim()) {
+    if (!form.category.trim()) {
       Alert.alert('Error', 'Please select a category');
       return false;
     }
-    if (!description.trim()) {
+    if (!form.description.trim()) {
       Alert.alert('Error', 'Please enter product description');
       return false;
     }
 
-    const validVendors = vendors.filter(v => v.name.trim() && v.link.trim());
+    const validVendors = form.vendors.filter((v: any) => v.name.trim() && v.link.trim());
     if (validVendors.length === 0) {
       Alert.alert('Error', 'Please add at least one vendor with name and link');
       return false;
@@ -110,130 +106,58 @@ const EditProductScreen: React.FC<EditProductScreenProps> = ({ navigation, route
     return true;
   };
 
-  // const navigateBackToProductDetail = (updatedProduct?: Product) => {
-  //   navigation.navigate('ProductDetail', {
-  //     product: updatedProduct || product,
-  //     isUpdated: updatedProduct ? true : false
-  //   });
-  // };
-// Only the navigation functions need to be changed in EditProductScreen.tsx
-// Replace these functions in your existing EditProductScreen.tsx:
-
-const navigateBackToProductDetail = (updatedProduct?: Product) => {
-  // Use setParams to update the route params instead of navigate
-  if (updatedProduct) {
-    navigation.setParams({
-      product: updatedProduct,
-      isUpdated: true
-    });
-  }
-  navigation.goBack();
-};
-
-const handleUpdate = async () => {
-  if (!validateForm()) return;
-
-  setIsLoading(true);
-  
-  // Simulate API call
-  setTimeout(() => {
-    setIsLoading(false);
-    
-    const updatedProduct: Product = {
-      ...product,
-      name: productName,
-      brand: brand,
-      price: Number(price),
-      description: description,
-      category: category,
-      image: imageUrl,
-      inStock: inStock,
-      vendors: vendors.filter(v => v.name.trim() && v.link.trim())
-    };
-
-    Alert.alert('Success', 'Product updated successfully!', [
-      {
-        text: 'OK',
-        onPress: () => {
-          // Navigate back with updated product data
-          navigation.navigate('ProductDetailScreen', {
-            product: updatedProduct,
-            isUpdated: true
-          });
-        },
-      },
-    ]);
-  }, 1500);
-};
-  // const handleUpdate = async () => {
-  //   if (!validateForm()) return;
-
-  //   setIsLoading(true);
-    
-  //   // Simulate API call
-  //   setTimeout(() => {
-  //     setIsLoading(false);
-      
-  //     const updatedProduct: Product = {
-  //       ...product,
-  //       name: productName,
-  //       brand: brand,
-  //       price: Number(price),
-  //       description: description,
-  //       category: category,
-  //       image: imageUrl,
-  //       inStock: inStock,
-  //       vendors: vendors.filter(v => v.name.trim() && v.link.trim())
-  //     };
-
-  //     Alert.alert('Success', 'Product updated successfully!', [
-  //       {
-  //         text: 'OK',
-  //         onPress: () => navigateBackToProductDetail(updatedProduct),
-  //       },
-  //     ]);
-  //   }, 1500);
-  // };
-
-  const handleCancel = () => {
-    Alert.alert(
-      'Discard Changes',
-      'Are you sure you want to discard your changes?',
-      [
-        { text: 'Keep Editing', style: 'cancel' },
-        { 
-          text: 'Discard', 
-          style: 'destructive', 
-          onPress: () => navigateBackToProductDetail()
-        },
-      ]
-    );
+  const navigateBackToProductDetail = (updatedProduct: any) => {
+    if (updatedProduct) {
+      navigation.setParams({
+        product: updatedProduct,
+        isUpdated: true
+      });
+    }
+    navigation.goBack();
   };
 
-  const handleBackPress = () => {
-    // Check if there are any changes made
-    const hasChanges = 
-      productName !== product.name ||
-      brand !== product.brand ||
-      price !== product.price.toString() ||
-      description !== product.description ||
-      category !== product.category ||
-      imageUrl !== product.image ||
-      inStock !== product.inStock ||
-      JSON.stringify(vendors) !== JSON.stringify(product.vendors);
+  const handleUpdate = async () => {
+    if (!validateForm()) return;
 
-    if (hasChanges) {
-      handleCancel();
-    } else {
-      navigateBackToProductDetail();
+    setIsLoading(true);
+
+    try {
+      const updated = await updateProduct(
+        form.id,
+        form.name,
+        form.brand,
+        form.price,
+        form.image,
+        form.vendors,
+        form.description,
+        form.category,
+        form.inStock
+      );
+
+      showModal({
+        title: 'Success',
+        message: 'Product updated successfully!',
+        onlyOk: true,
+        onConfirm: () => {
+          setModalVisible(false);
+          navigation.navigate('ProductDetailScreen', {
+            product: updated,
+            isUpdated: true
+          });
+        }
+      });
+    } catch (error) {
+      Alert.alert('Error', 'Failed to update product. Please try again.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity onPress={handleBackPress} style={styles.backButton}>
-          <Icon name="times" size={20} color={colors.text.primary} />
+        <TouchableOpacity onPress={() => navigation.navigate('ProductScreen')} style={styles.backButton}>
+          <Icon name="arrow-left" size={20} color={colors?.text?.primary || '#333'} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Edit Product</Text>
         <TouchableOpacity onPress={handleUpdate} style={styles.saveButton} disabled={isLoading}>
@@ -244,13 +168,13 @@ const handleUpdate = async () => {
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Basic Information</Text>
-          
+
           <View style={styles.inputGroup}>
             <Text style={styles.label}>Product Name *</Text>
             <TextInput
               style={styles.input}
-              value={productName}
-              onChangeText={setProductName}
+              value={form.name}
+              onChangeText={(value) => handleChange('name', value)}
               placeholder="Enter product name"
               placeholderTextColor={colors.text.secondary}
             />
@@ -260,8 +184,8 @@ const handleUpdate = async () => {
             <Text style={styles.label}>Brand *</Text>
             <TextInput
               style={styles.input}
-              value={brand}
-              onChangeText={setBrand}
+              value={form.brand}
+              onChangeText={(value) => handleChange('brand', value)}
               placeholder="Enter brand name"
               placeholderTextColor={colors.text.secondary}
             />
@@ -271,8 +195,8 @@ const handleUpdate = async () => {
             <Text style={styles.label}>Price (₹) *</Text>
             <TextInput
               style={styles.input}
-              value={price}
-              onChangeText={setPrice}
+              value={form.price.toString()}
+              onChangeText={(value) => handleChange('price', Number(value))}
               placeholder="Enter price"
               placeholderTextColor={colors.text.secondary}
               keyboardType="numeric"
@@ -287,13 +211,13 @@ const handleUpdate = async () => {
                   key={index}
                   style={[
                     styles.categoryChip,
-                    category === cat && styles.categoryChipSelected
+                    form.category === cat && styles.categoryChipSelected
                   ]}
-                  onPress={() => setCategory(cat)}
+                  onPress={() => handleChange('category', cat)}
                 >
                   <Text style={[
                     styles.categoryText,
-                    category === cat && styles.categoryTextSelected
+                    form.category === cat && styles.categoryTextSelected
                   ]}>
                     {cat}
                   </Text>
@@ -306,8 +230,8 @@ const handleUpdate = async () => {
             <Text style={styles.label}>Image URL</Text>
             <TextInput
               style={styles.input}
-              value={imageUrl}
-              onChangeText={setImageUrl}
+              value={form.image}
+              onChangeText={(value) => handleChange('image', value)}
               placeholder="Enter image URL"
               placeholderTextColor={colors.text.secondary}
               autoCapitalize="none"
@@ -318,8 +242,8 @@ const handleUpdate = async () => {
             <Text style={styles.label}>Description *</Text>
             <TextInput
               style={[styles.input, styles.textArea]}
-              value={description}
-              onChangeText={setDescription}
+              value={form.description}
+              onChangeText={(value) => handleChange('description', value)}
               placeholder="Enter product description"
               placeholderTextColor={colors.text.secondary}
               multiline
@@ -330,10 +254,10 @@ const handleUpdate = async () => {
           <View style={styles.switchContainer}>
             <Text style={styles.label}>In Stock</Text>
             <Switch
-              value={inStock}
-              onValueChange={setInStock}
+              value={form.inStock}
+              onValueChange={(value) => handleChange('inStock', value)}
               trackColor={{ false: colors.border.light, true: colors.primary + '40' }}
-              thumbColor={inStock ? colors.primary : colors.text.secondary}
+              thumbColor={form.inStock ? colors.primary : colors.text.secondary}
             />
           </View>
         </View>
@@ -347,11 +271,11 @@ const handleUpdate = async () => {
             </TouchableOpacity>
           </View>
 
-          {vendors.map((vendor, index) => (
+          {form.vendors.map((vendor: any, index: any) => (
             <View key={index} style={styles.vendorContainer}>
               <View style={styles.vendorHeader}>
                 <Text style={styles.vendorTitle}>Vendor {index + 1}</Text>
-                {vendors.length > 1 && (
+                {form.vendors.length > 1 && (
                   <TouchableOpacity
                     onPress={() => removeVendor(index)}
                     style={styles.removeVendorButton}
@@ -360,7 +284,7 @@ const handleUpdate = async () => {
                   </TouchableOpacity>
                 )}
               </View>
-              
+
               <View style={styles.inputGroup}>
                 <Text style={styles.label}>Vendor Name *</Text>
                 <TextInput
@@ -388,11 +312,11 @@ const handleUpdate = async () => {
         </View>
 
         <View style={styles.buttonContainer}>
-          <TouchableOpacity style={styles.cancelButton} onPress={handleCancel}>
+          <TouchableOpacity style={styles.cancelButton} onPress={() => navigation.navigate('ProductScreen')}>
             <Icon name="times" size={16} color={colors.text.secondary} />
             <Text style={styles.cancelButtonText}>Cancel</Text>
           </TouchableOpacity>
-          
+
           <TouchableOpacity
             style={[styles.updateButton, isLoading && styles.disabledButton]}
             onPress={handleUpdate}
@@ -409,6 +333,16 @@ const handleUpdate = async () => {
           </TouchableOpacity>
         </View>
       </ScrollView>
+      <CommonModal
+        visible={modalVisible}
+        title={modalConfig.title}
+        message={modalConfig.message}
+        onConfirm={modalConfig.onConfirm}
+        onCancel={modalConfig.onCancel}
+        confirmText={modalConfig.confirmText}
+        cancelText={modalConfig.cancelText}
+        onlyOk={modalConfig.onlyOk}
+      />
     </SafeAreaView>
   );
 };

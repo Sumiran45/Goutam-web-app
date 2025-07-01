@@ -12,6 +12,8 @@ import {
 } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome5';
 import { colors, moderateScale } from '../../../../../styles/admin/theme';
+import { deleteProduct } from '../../../../../controller/Product.controller';
+import CommonModal from '../../../home/tabs/modal';
 
 interface Vendor {
   name: string;
@@ -43,15 +45,23 @@ interface ProductDetailScreenProps {
 const ProductDetailScreen: React.FC<ProductDetailScreenProps> = ({ navigation, route }) => {
   const { product: initialProduct, isUpdated } = route.params;
   const [currentProduct, setCurrentProduct] = useState<Product>(initialProduct);
-
-  // Update the product if it was edited
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [modalConfig, setModalConfig] = useState({
+    title: '',
+    message: '',
+    onConfirm: () => { },
+    onCancel: () => { },
+    confirmText: 'OK',
+    cancelText: 'Cancel',
+    onlyOk: false,
+  });
   useEffect(() => {
     if (isUpdated && route.params.product) {
       setCurrentProduct(route.params.product);
     }
   }, [route.params.product, isUpdated]);
 
-  // Listen for navigation focus to update product data
   useEffect(() => {
     const unsubscribe = navigation.addListener('focus', () => {
       if (route.params.product) {
@@ -62,34 +72,65 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = ({ navigation, r
     return unsubscribe;
   }, [navigation, route.params.product]);
 
+  const showModal = (config: Partial<typeof modalConfig>) => {
+    setModalConfig({
+      ...modalConfig,
+      ...config,
+      onConfirm: config.onConfirm || (() => setModalVisible(false)),
+      onCancel: config.onCancel || (() => setModalVisible(false)),
+    });
+    setModalVisible(true);
+  };
+
   const handleEdit = () => {
-    navigation.navigate('EditProductScreen', { product: currentProduct });
+    showModal({
+      title: 'Edit Product',
+      message: `Do you want to edit "${currentProduct.name}"?`,
+      confirmText: 'Edit',
+      cancelText: 'Cancel',
+      onConfirm: () => {
+        setModalVisible(false);
+        navigation.navigate('EditProductScreen', { product: currentProduct });
+      },
+      onCancel: () => setModalVisible(false),
+      onlyOk: false,
+    });
   };
 
   const handleDelete = () => {
-    Alert.alert(
-      'Delete Product',
-      `Are you sure you want to delete "${currentProduct.name}"?`,
-      [
-        {
-          text: 'Cancel',
-          style: 'cancel',
-        },
-        {
-          text: 'Delete',
-          style: 'destructive',
-          onPress: () => {
-            // Here you would typically call an API to delete the product
-            Alert.alert('Success', 'Product deleted successfully!', [
-              {
-                text: 'OK',
-                onPress: () => navigation.goBack(),
-              },
-            ]);
-          },
-        },
-      ]
-    );
+    showModal({
+      title: 'Delete Product',
+      message: `Are you sure you want to delete "${currentProduct.name}"? This action cannot be undone.`,
+      confirmText: 'Delete',
+      cancelText: 'Cancel',
+      onConfirm: async () => {
+        setModalVisible(false);
+        setIsDeleting(true);
+        try {
+          await deleteProduct(currentProduct.id);
+          showModal({
+            title: 'Success',
+            message: 'Product deleted successfully!',
+            onlyOk: true,
+            onConfirm: () => {
+              setModalVisible(false);
+              navigation.navigate('ProductScreen');
+            }
+          });
+        } catch (error: any) {
+          showModal({
+            title: 'Error',
+            message: error.message || 'Failed to delete product. Please try again.',
+            onlyOk: true,
+            onConfirm: () => setModalVisible(false),
+          });
+        } finally {
+          setIsDeleting(false);
+        }
+      },
+      onCancel: () => setModalVisible(false),
+      onlyOk: false,
+    });
   };
 
   const openVendorLink = async (url: string) => {
@@ -98,16 +139,16 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = ({ navigation, r
       if (supported) {
         await Linking.openURL(url);
       } else {
-        Alert.alert('Error', 'Cannot open this link');
+        showModal({ title: 'Error', message: 'Cannot open this link', onlyOk: true });
       }
     } catch (error) {
-      Alert.alert('Error', 'Cannot open this link');
+      showModal({ title: 'Error', message: 'Cannot open this link', onlyOk: true });
     }
   };
 
   const getVendorIcon = (vendorName: string) => {
     if (!vendorName) return 'store';
-    
+
     const name = vendorName.toLowerCase();
     switch (name) {
       case 'amazon':
@@ -128,16 +169,31 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = ({ navigation, r
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+        <TouchableOpacity onPress={() => navigation.navigate('ProductScreen')} style={styles.backButton}>
           <Icon name="arrow-left" size={20} color={colors?.text?.primary || '#333'} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Product Details</Text>
         <View style={styles.headerActions}>
-          <TouchableOpacity onPress={handleEdit} style={styles.editButton}>
+          <TouchableOpacity
+            onPress={handleEdit}
+            style={styles.editButton}
+            disabled={isDeleting}
+          >
             <Icon name="edit" size={18} color={colors?.primary || '#6200EE'} />
           </TouchableOpacity>
-          <TouchableOpacity onPress={handleDelete} style={styles.deleteButton}>
-            <Icon name="trash" size={18} color={colors?.error || '#FF5252'} />
+          <TouchableOpacity
+            onPress={() => {
+              console.log('Delete button pressed!'); // Debug log
+              handleDelete();
+            }}
+            style={styles.deleteButton}
+            disabled={isDeleting}
+          >
+            <Icon
+              name={isDeleting ? "spinner" : "trash"}
+              size={18}
+              color={colors?.error || '#FF5252'}
+            />
           </TouchableOpacity>
         </View>
       </View>
@@ -194,16 +250,43 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = ({ navigation, r
         </View>
 
         <View style={styles.actionButtons}>
-          <TouchableOpacity style={styles.editActionButton} onPress={handleEdit}>
+          <TouchableOpacity
+            style={[styles.editActionButton, isDeleting && styles.disabledButton]}
+            onPress={handleEdit}
+            disabled={isDeleting}
+          >
             <Icon name="edit" size={18} color={colors?.white || '#fff'} />
             <Text style={styles.actionButtonText}>Edit Product</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.deleteActionButton} onPress={handleDelete}>
-            <Icon name="trash" size={18} color={colors?.white || '#fff'} />
-            <Text style={styles.actionButtonText}>Delete Product</Text>
+          <TouchableOpacity
+            style={[styles.deleteActionButton, isDeleting && styles.disabledButton]}
+            onPress={() => {
+              console.log('Delete action button pressed!'); // Debug log
+              handleDelete();
+            }}
+            disabled={isDeleting}
+          >
+            <Icon
+              name={isDeleting ? "spinner" : "trash"}
+              size={18}
+              color={colors?.white || '#fff'}
+            />
+            <Text style={styles.actionButtonText}>
+              {isDeleting ? 'Deleting...' : 'Delete Product'}
+            </Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
+      <CommonModal
+        visible={modalVisible}
+        title={modalConfig.title}
+        message={modalConfig.message}
+        onConfirm={modalConfig.onConfirm}
+        onCancel={modalConfig.onCancel}
+        confirmText={modalConfig.confirmText}
+        cancelText={modalConfig.cancelText}
+        onlyOk={modalConfig.onlyOk}
+      />
     </SafeAreaView>
   );
 };
@@ -395,6 +478,9 @@ const styles = StyleSheet.create({
     backgroundColor: colors?.error || '#FF5252',
     paddingVertical: moderateScale(15),
     borderRadius: moderateScale(10),
+  },
+  disabledButton: {
+    opacity: 0.6,
   },
   actionButtonText: {
     color: colors?.white || '#fff',

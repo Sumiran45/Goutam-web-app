@@ -64,13 +64,11 @@ const ArticleDetailModal = ({ visible, onClose, article }:any) => {
     }
   };
 
-  // Use test video URL if no video URL exists, or use existing one
   const videoUrl = article.videoUrl || getTestVideoUrl();
   const videoId = extractYouTubeId(videoUrl);
   const thumbnailUrl = videoId ? getYouTubeThumbnail(videoId) : null;
 
   const VideoSection = () => {
-    // Always show video section for testing, even if no videoUrl in article
     const showVideo = true; // Change this to article.videoUrl to restore original behavior
 
     if (!showVideo) return null;

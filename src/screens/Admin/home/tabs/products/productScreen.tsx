@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -9,26 +9,12 @@ import {
   SafeAreaView,
   Alert,
   RefreshControl,
+  ActivityIndicator,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome5';
 import { colors, moderateScale } from '../../../../../styles/admin/theme';
-
-interface Vendor {
-  name: string;
-  link: string;
-}
-
-interface Product {
-  id: string;
-  name: string;
-  brand: string;
-  price: number;
-  image: string;
-  vendors: Vendor[];
-  description: string;
-  category: string;
-  inStock: boolean;
-}
+import { fetchProducts, Product } from '../../../../../controller/Product.controller';
+import { useFocusEffect } from '@react-navigation/native';
 
 interface ProductScreenProps {
   navigation: any;
@@ -37,81 +23,32 @@ interface ProductScreenProps {
 const ProductScreen: React.FC<ProductScreenProps> = ({ navigation }) => {
   const [products, setProducts] = useState<Product[]>([]);
   const [refreshing, setRefreshing] = useState(false);
+  const [loading, setLoading] = useState(true);
 
-  // Mock data for menstrual products
-  useEffect(() => {
-    loadProducts();
-  }, []);
-
-  const loadProducts = () => {
-    const mockProducts: Product[] = [
-      {
-        id: '1',
-        name: 'Ultra Soft Sanitary Pads',
-        brand: 'Whisper',
-        price: 250,
-        image: 'https://m.media-amazon.com/images/I/51xlH8K9XAL._AC_UL320_.jpg',
-        vendors: [
-          { name: 'Amazon', link: 'https://amazon.in/whisper-pads' },
-          { name: 'Flipkart', link: 'https://flipkart.com/whisper-pads' },
-          { name: 'Nykaa', link: 'https://nykaa.com/whisper-pads' }
-        ],
-        description: 'Ultra-soft sanitary pads with wings for maximum comfort and protection.',
-        category: 'Sanitary Pads',
-        inStock: true
-      },
-      {
-        id: '2',
-        name: 'Menstrual Cup - Size M',
-        brand: 'DivaCup',
-        price: 1200,
-        image: 'https://m.media-amazon.com/images/I/61dWHyPageL._AC_UL320_.jpg',
-        vendors: [
-          { name: 'Amazon', link: 'https://amazon.in/diva-cup' },
-          { name: 'Nykaa', link: 'https://nykaa.com/diva-cup' }
-        ],
-        description: 'Eco-friendly silicone menstrual cup, reusable for up to 10 years.',
-        category: 'Menstrual Cups',
-        inStock: true
-      },
-      {
-        id: '3',
-        name: 'Organic Cotton Tampons',
-        brand: 'Sirona',
-        price: 180,
-        image: 'https://m.media-amazon.com/images/I/51S-q6tIYFL._AC_UL320_.jpg',
-        vendors: [
-          { name: 'Amazon', link: 'https://amazon.in/sirona-tampons' },
-          { name: 'Flipkart', link: 'https://flipkart.com/sirona-tampons' }
-        ],
-        description: '100% organic cotton tampons with biodegradable applicator.',
-        category: 'Tampons',
-        inStock: false
-      },
-      {
-        id: '4',
-        name: 'Period Panties - Pack of 3',
-        brand: 'Adira',
-        price: 899,
-        image: 'https://m.media-amazon.com/images/I/712DbJ3eMqL._AC_UL320_.jpg',
-        vendors: [
-          { name: 'Amazon', link: 'https://amazon.in/adira-panties' },
-          { name: 'Nykaa', link: 'https://nykaa.com/adira-panties' }
-        ],
-        description: 'Leak-proof period underwear with 12-hour protection.',
-        category: 'Period Underwear',
-        inStock: true
-      }
-    ];
-    setProducts(mockProducts);
+  const loadProducts = async () => {
+    try {
+      console.log('Loading products from API...');
+      const fetchedProducts = await fetchProducts();
+      console.log('Fetched products:', fetchedProducts);
+      setProducts(fetchedProducts);
+    } catch (error) {
+      console.error('Error loading products:', error);
+      Alert.alert('Error', 'Failed to load products. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const onRefresh = () => {
-    setRefreshing(true);
-    setTimeout(() => {
+  useFocusEffect(
+    useCallback(() => {
       loadProducts();
-      setRefreshing(false);
-    }, 1000);
+    }, [])
+  );
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await loadProducts();
+    setRefreshing(false);
   };
 
   const navigateToDetail = (product: Product) => {
@@ -124,7 +61,11 @@ const ProductScreen: React.FC<ProductScreenProps> = ({ navigation }) => {
 
   const renderProduct = ({ item }: { item: Product }) => (
     <View style={styles.productCard}>
-      <Image source={{ uri: item.image }} style={styles.productImage} />
+      <Image 
+        source={{ uri: item.image || 'https://via.placeholder.com/150' }} 
+        style={styles.productImage} 
+        defaultSource={{ uri: 'https://via.placeholder.com/150' }}
+      />
       <View style={styles.productInfo}>
         <Text style={styles.productBrand}>{item.brand}</Text>
         <Text style={styles.productName}>{item.name}</Text>
@@ -154,6 +95,36 @@ const ProductScreen: React.FC<ProductScreenProps> = ({ navigation }) => {
     </View>
   );
 
+  const renderEmptyState = () => (
+    <View style={styles.emptyState}>
+      <Icon name="box-open" size={60} color={colors.text.secondary} />
+      <Text style={styles.emptyStateTitle}>No Products Found</Text>
+      <Text style={styles.emptyStateSubtitle}>Add your first product to get started</Text>
+      <TouchableOpacity style={styles.emptyStateButton} onPress={navigateToAddProduct}>
+        <Icon name="plus" size={16} color={colors.white} />
+        <Text style={styles.emptyStateButtonText}>Add Product</Text>
+      </TouchableOpacity>
+    </View>
+  );
+
+  if (loading) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.header}>
+          <Text style={styles.headerTitle}>Products Management</Text>
+          <TouchableOpacity style={styles.addButton} onPress={navigateToAddProduct}>
+            <Icon name="plus" size={16} color={colors.white} />
+            <Text style={styles.addButtonText}>Add Product</Text>
+          </TouchableOpacity>
+        </View>
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={colors.primary} />
+          <Text style={styles.loadingText}>Loading products...</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
@@ -179,16 +150,20 @@ const ProductScreen: React.FC<ProductScreenProps> = ({ navigation }) => {
         </View>
       </View>
 
-      <FlatList
-        data={products}
-        renderItem={renderProduct}
-        keyExtractor={(item) => item.id}
-        contentContainerStyle={styles.listContainer}
-        showsVerticalScrollIndicator={false}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-        }
-      />
+      {products.length === 0 ? (
+        renderEmptyState()
+      ) : (
+        <FlatList
+          data={products}
+          renderItem={renderProduct}
+          keyExtractor={(item) => item.id}
+          contentContainerStyle={styles.listContainer}
+          showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          }
+        />
+      )}
     </SafeAreaView>
   );
 };
@@ -257,6 +232,16 @@ const styles = StyleSheet.create({
     fontSize: moderateScale(12),
     color: colors.text.secondary,
     marginTop: moderateScale(5),
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    marginTop: moderateScale(10),
+    fontSize: moderateScale(16),
+    color: colors.text.secondary,
   },
   listContainer: {
     paddingHorizontal: moderateScale(20),
@@ -354,6 +339,40 @@ const styles = StyleSheet.create({
     color: colors.white,
     fontWeight: '600',
     marginRight: moderateScale(5),
+  },
+  emptyState: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: moderateScale(40),
+  },
+  emptyStateTitle: {
+    fontSize: moderateScale(20),
+    fontWeight: 'bold',
+    color: colors.text.primary,
+    marginTop: moderateScale(20),
+    textAlign: 'center',
+  },
+  emptyStateSubtitle: {
+    fontSize: moderateScale(14),
+    color: colors.text.secondary,
+    marginTop: moderateScale(8),
+    textAlign: 'center',
+    lineHeight: moderateScale(20),
+  },
+  emptyStateButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.primary,
+    paddingHorizontal: moderateScale(20),
+    paddingVertical: moderateScale(12),
+    borderRadius: moderateScale(8),
+    marginTop: moderateScale(20),
+  },
+  emptyStateButtonText: {
+    color: colors.white,
+    fontWeight: '600',
+    marginLeft: moderateScale(8),
   },
 });
 
