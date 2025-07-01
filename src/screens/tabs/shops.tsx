@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
   View,
   Text,
@@ -9,11 +9,18 @@ import {
   StatusBar,
   ScrollView,
   Modal,
+  ActivityIndicator,
+  Alert,
+  StyleSheet,
+  Dimensions,
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-import { styles } from '../../styles/Shop.style';
+import { fetchProducts, Product, ProductFilters } from '../../controller/Product.controller';
+
+const { width } = Dimensions.get('window');
+const CARD_WIDTH = (width - 48) / 2; // 48 = 16 (padding) * 2 + 16 (gap)
 
 type RootStackParamList = {
   Shop: undefined;
@@ -22,187 +29,87 @@ type RootStackParamList = {
 
 type ShopScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Shop'>;
 
-interface Product {
-  id: string;
-  name: string;
-  price: number;
-  image: string;
-  description?: string;
-  category: string;
-  brand: string;
-  vendorLinks: {
-    amazon?: string;
-    flipkart?: string;
-    nykaa?: string;
-  };
-  rating: number;
-  isOrganic?: boolean;
-}
-
 interface FilterState {
   category: string;
   priceRange: { min: number; max: number };
   brand: string;
-  isOrganic: boolean | null;
-  sortBy: 'price-low' | 'price-high' | 'rating' | 'name';
+  inStock: boolean | null;
+  sortBy: 'price-low' | 'price-high' | 'name';
 }
 
 export const ShopScreen = () => {
   const navigation = useNavigation<ShopScreenNavigationProp>();
   const [showFilters, setShowFilters] = useState<boolean>(false);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [refreshing, setRefreshing] = useState<boolean>(false);
   
   const [filters, setFilters] = useState<FilterState>({
     category: 'All',
-    priceRange: { min: 0, max: 2000 },
+    priceRange: { min: 0, max: 5000 },
     brand: 'All',
-    isOrganic: null,
+    inStock: null,
     sortBy: 'name'
   });
 
-  const categories = ['All', 'Sanitary Pads', 'Menstrual Cups', 'Pain Relief', 'Intimate Care', 'Tampons', 'Supplements'];
-  const brands = ['All', 'Whisper', 'Stayfree', 'Sofy', 'Sirona', 'Plum', 'The Honest Company', 'Carmesi', 'Nua'];
+  // Dynamic categories and brands based on fetched products
+  const categories = useMemo(() => {
+    const uniqueCategories = ['All', ...new Set(products.map(p => p.category))];
+    return uniqueCategories;
+  }, [products]);
+
+  const brands = useMemo(() => {
+    const uniqueBrands = ['All', ...new Set(products.map(p => p.brand))];
+    return uniqueBrands;
+  }, [products]);
+
   const priceRanges = [
     { label: 'Under ₹200', min: 0, max: 200 },
     { label: '₹200 - ₹500', min: 200, max: 500 },
     { label: '₹500 - ₹1000', min: 500, max: 1000 },
-    { label: 'Above ₹1000', min: 1000, max: 5000 },
+    { label: '₹1000 - ₹2000', min: 1000, max: 2000 },
+    { label: 'Above ₹2000', min: 2000, max: 10000 },
   ];
 
-  const products: Product[] = [
-    {
-      id: '1',
-      name: 'Ultra Soft Sanitary Pads',
-      price: 120,
-      image: 'https://evereve.in/cdn/shop/files/1_adbbd681-74cc-4c4b-968e-389030d0c26d.jpg?v=1688713008',
-      description: 'Premium quality cotton sanitary pads with wings for maximum comfort and protection.',
-      category: 'Sanitary Pads',
-      brand: 'Whisper',
-      rating: 4.5,
-      isOrganic: false,
-      vendorLinks: {
-        amazon: 'https://amazon.in/dp/B08XYZ123',
-        flipkart: 'https://flipkart.com/whisper-ultra-soft',
-        nykaa: 'https://nykaa.com/whisper-pads'
-      }
-    },
-    {
-      id: '2',
-      name: 'Reusable Menstrual Cup',
-      price: 499,
-      image: 'https://www.peesafe.com/cdn/shop/files/Reusable_Menstrual_cup_Medium_with_product_a1e8aea3-8e65-4b43-bb5b-d5ef1916a49e.jpg?v=1744603322',
-      description: 'Medical grade silicone menstrual cup. Eco-friendly and lasts up to 5 years.',
-      category: 'Menstrual Cups',
-      brand: 'Sirona',
-      rating: 4.8,
-      isOrganic: true,
-      vendorLinks: {
-        amazon: 'https://amazon.in/dp/B09ABC456',
-        flipkart: 'https://flipkart.com/sirona-menstrual-cup',
-        nykaa: 'https://nykaa.com/sirona-cup'
-      }
-    },
-    {
-      id: '3',
-      name: 'Electric Heating Pad',
-      price: 899,
-      image: 'https://cdn.moglix.com/p/ySCwKqYQwvRGN-xxlarge.jpg',
-      description: 'Electric heating pad with 3 temperature settings for effective menstrual cramp relief.',
-      category: 'Pain Relief',
-      brand: 'The Honest Company',
-      rating: 4.3,
-      isOrganic: false,
-      vendorLinks: {
-        amazon: 'https://amazon.in/dp/B07DEF789',
-        flipkart: 'https://flipkart.com/heating-pad-cramps'
-      }
-    },
-    {
-      id: '4',
-      name: 'Intimate Hygiene Wipes',
-      price: 149,
-      image: 'https://m.media-amazon.com/images/I/71-mcgWoYQL.jpg',
-      description: 'Alcohol-free, pH-balanced intimate wipes. Perfect for on-the-go freshness.',
-      category: 'Intimate Care',
-      brand: 'Plum',
-      rating: 4.2,
-      isOrganic: true,
-      vendorLinks: {
-        amazon: 'https://amazon.in/dp/B08GHI012',
-        nykaa: 'https://nykaa.com/plum-intimate-wipes'
-      }
-    },
-    {
-      id: '5',
-      name: '100% Organic Cotton Tampons',
-      price: 320,
-      image: 'https://fabpad.in/cdn/shop/files/Whitebg2.jpg?v=1709622413',
-      description: '100% organic cotton tampons. Biodegradable and chemical-free.',
-      category: 'Tampons',
-      brand: 'Carmesi',
-      rating: 4.6,
-      isOrganic: true,
-      vendorLinks: {
-        amazon: 'https://amazon.in/dp/B09JKL345',
-        flipkart: 'https://flipkart.com/carmesi-organic-tampons',
-        nykaa: 'https://nykaa.com/carmesi-tampons'
-      }
-    },
-    {
-      id: '6',
-      name: 'Period Pain Relief Tablets',
-      price: 89,
-      image: 'https://5.imimg.com/data5/SELLER/Default/2021/10/YO/WR/JQ/139948063/mefenamic-acid-paracetamol-tablets-500x500.jpg',
-      description: 'Natural herbal tablets for menstrual pain and cramp relief.',
-      category: 'Pain Relief',
-      brand: 'Nua',
-      rating: 4.1,
-      isOrganic: true,
-      vendorLinks: {
-        amazon: 'https://amazon.in/dp/B08MNO678',
-        flipkart: 'https://flipkart.com/nua-pain-relief'
-      }
-    },
-    {
-      id: '7',
-      name: 'Overnight Sanitary Pads',
-      price: 189,
-      image: 'https://images-eu.ssl-images-amazon.com/images/I/71QGvQI%2BVDL._AC_UL165_SR165,165_.jpg',
-      description: 'Extra-long pads with maximum absorption for overnight protection.',
-      category: 'Sanitary Pads',
-      brand: 'Stayfree',
-      rating: 4.4,
-      isOrganic: false,
-      vendorLinks: {
-        amazon: 'https://amazon.in/dp/B07PQR901',
-        flipkart: 'https://flipkart.com/stayfree-overnight',
-        nykaa: 'https://nykaa.com/stayfree-overnight'
-      }
-    },
-    {
-      id: '8',
-      name: 'Iron & Vitamin B12 Supplements',
-      price: 450,
-      image: 'https://5.imimg.com/data5/SELLER/Default/2022/12/DN/WM/XE/106293031/iron-folic-acid-tablets-500x500.jpg',
-      description: 'Essential supplements to combat iron deficiency during menstruation.',
-      category: 'Supplements',
-      brand: 'Nua',
-      rating: 4.3,
-      isOrganic: true,
-      vendorLinks: {
-        amazon: 'https://amazon.in/dp/B09STU234',
-        flipkart: 'https://flipkart.com/nua-iron-supplements'
-      }
+  const loadProducts = async (showLoader = true) => {
+    try {
+      if (showLoader) setLoading(true);
+      
+      // Build filters for API call only for category
+      const apiFilters: ProductFilters = {};
+      if (filters.category !== 'All') apiFilters.category = filters.category;
+
+      const fetchedProducts = await fetchProducts(apiFilters);
+      setProducts(fetchedProducts);
+    } catch (error) {
+      console.error('Error loading products:', error);
+      Alert.alert('Error', 'Failed to load products. Please try again.');
+    } finally {
+      if (showLoader) setLoading(false);
+      setRefreshing(false);
     }
-  ];
+  };
+
+  // Load products on component mount and when screen comes into focus
+  useFocusEffect(
+    React.useCallback(() => {
+      loadProducts();
+    }, [filters.category]) // Only reload when category changes
+  );
+
+  const handleRefresh = () => {
+    setRefreshing(true);
+    loadProducts(false);
+  };
 
   const filteredProducts = useMemo(() => {
     let filtered = products.filter(product => {
       const categoryMatch = filters.category === 'All' || product.category === filters.category;
       const priceMatch = product.price >= filters.priceRange.min && product.price <= filters.priceRange.max;
       const brandMatch = filters.brand === 'All' || product.brand === filters.brand;
-      const organicMatch = filters.isOrganic === null || product.isOrganic === filters.isOrganic;
+      const stockMatch = filters.inStock === null || product.inStock === filters.inStock;
       
-      return categoryMatch && priceMatch && brandMatch && organicMatch;
+      return categoryMatch && priceMatch && brandMatch && stockMatch;
     });
 
     // Sort products
@@ -212,8 +119,6 @@ export const ShopScreen = () => {
           return a.price - b.price;
         case 'price-high':
           return b.price - a.price;
-        case 'rating':
-          return b.rating - a.rating;
         case 'name':
         default:
           return a.name.localeCompare(b.name);
@@ -221,7 +126,7 @@ export const ShopScreen = () => {
     });
 
     return filtered;
-  }, [filters]);
+  }, [products, filters]);
 
   const navigateToProductDetail = (product: Product) => {
     navigation.navigate('ProductDetail', { product });
@@ -230,9 +135,9 @@ export const ShopScreen = () => {
   const resetFilters = () => {
     setFilters({
       category: 'All',
-      priceRange: { min: 0, max: 2000 },
+      priceRange: { min: 0, max: 5000 },
       brand: 'All',
-      isOrganic: null,
+      inStock: null,
       sortBy: 'name'
     });
   };
@@ -329,20 +234,20 @@ export const ShopScreen = () => {
               </ScrollView>
             </View>
 
-            {/* Organic Filter */}
+            {/* Stock Filter */}
             <View style={styles.filterSection}>
-              <Text style={styles.filterSectionTitle}>Product Type</Text>
+              <Text style={styles.filterSectionTitle}>Availability</Text>
               <View style={styles.organicFilter}>
                 <TouchableOpacity
                   style={[
                     styles.organicChip,
-                    filters.isOrganic === null && styles.filterChipActive
+                    filters.inStock === null && styles.filterChipActive
                   ]}
-                  onPress={() => setFilters(prev => ({ ...prev, isOrganic: null }))}
+                  onPress={() => setFilters(prev => ({ ...prev, inStock: null }))}
                 >
                   <Text style={[
                     styles.filterChipText,
-                    filters.isOrganic === null && styles.filterChipTextActive
+                    filters.inStock === null && styles.filterChipTextActive
                   ]}>
                     All
                   </Text>
@@ -350,29 +255,29 @@ export const ShopScreen = () => {
                 <TouchableOpacity
                   style={[
                     styles.organicChip,
-                    filters.isOrganic === true && styles.filterChipActive
+                    filters.inStock === true && styles.filterChipActive
                   ]}
-                  onPress={() => setFilters(prev => ({ ...prev, isOrganic: true }))}
+                  onPress={() => setFilters(prev => ({ ...prev, inStock: true }))}
                 >
                   <Text style={[
                     styles.filterChipText,
-                    filters.isOrganic === true && styles.filterChipTextActive
+                    filters.inStock === true && styles.filterChipTextActive
                   ]}>
-                    Organic
+                    In Stock
                   </Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={[
                     styles.organicChip,
-                    filters.isOrganic === false && styles.filterChipActive
+                    filters.inStock === false && styles.filterChipActive
                   ]}
-                  onPress={() => setFilters(prev => ({ ...prev, isOrganic: false }))}
+                  onPress={() => setFilters(prev => ({ ...prev, inStock: false }))}
                 >
                   <Text style={[
                     styles.filterChipText,
-                    filters.isOrganic === false && styles.filterChipTextActive
+                    filters.inStock === false && styles.filterChipTextActive
                   ]}>
-                    Regular
+                    Out of Stock
                   </Text>
                 </TouchableOpacity>
               </View>
@@ -385,8 +290,7 @@ export const ShopScreen = () => {
                 {[
                   { key: 'name', label: 'Name A-Z' },
                   { key: 'price-low', label: 'Price: Low to High' },
-                  { key: 'price-high', label: 'Price: High to Low' },
-                  { key: 'rating', label: 'Highest Rated' }
+                  { key: 'price-high', label: 'Price: High to Low' }
                 ].map(option => (
                   <TouchableOpacity
                     key={option.key}
@@ -432,18 +336,17 @@ export const ShopScreen = () => {
     >
       <View style={styles.imageContainer}>
         <Image 
-          source={{ uri: item.image }} 
+          source={{ uri: item.image || 'https://via.placeholder.com/200x200?text=No+Image' }} 
           style={styles.image} 
           resizeMode="cover"
         />
-        {item.isOrganic && (
-          <View style={styles.organicBadge}>
-            <Text style={styles.organicBadgeText}>Organic</Text>
+        {!item.inStock && (
+          <View style={styles.outOfStockBadge}>
+            <Text style={styles.outOfStockBadgeText}>Out of Stock</Text>
           </View>
         )}
-        <View style={styles.ratingBadge}>
-          <Icon name="star" size={12} color="#FFD700" />
-          <Text style={styles.ratingText}>{item.rating}</Text>
+        <View style={styles.categoryBadge}>
+          <Text style={styles.categoryBadgeText}>{item.category}</Text>
         </View>
       </View>
       
@@ -453,21 +356,45 @@ export const ShopScreen = () => {
         <Text style={styles.productPrice}>₹{item.price}</Text>
         
         <TouchableOpacity
-          style={styles.buyNowButton}
+          style={[
+            styles.buyNowButton,
+            !item.inStock && styles.buyNowButtonDisabled
+          ]}
           onPress={() => navigateToProductDetail(item)}
+          disabled={!item.inStock}
         >
-          <Text style={styles.buttonText}>Buy Now</Text>
+          <Text style={[
+            styles.buttonText,
+            !item.inStock && styles.buttonTextDisabled
+          ]}>
+            {item.inStock ? 'View Details' : 'Out of Stock'}
+          </Text>
         </TouchableOpacity>
       </View>
     </TouchableOpacity>
   );
+
+  if (loading) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <StatusBar backgroundColor="#3498db" barStyle="light-content" />
+        <View style={styles.headerContainer}>
+          <Text style={styles.header}>PERIOD CARE SHOP</Text>
+        </View>
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#3498db" />
+          <Text style={styles.loadingText}>Loading products...</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar backgroundColor="#3498db" barStyle="light-content" />
       
       <View style={styles.headerContainer}>
-        <Text style={styles.header}>Period Care Shop</Text>
+        <Text style={styles.header}>PERIOD CARE SHOP</Text>
       </View>
 
       <View style={styles.filterBar}>
@@ -484,19 +411,345 @@ export const ShopScreen = () => {
         </Text>
       </View>
 
-      <FlatList
-        data={filteredProducts}
-        renderItem={renderProduct}
-        keyExtractor={(item) => item.id}
-        contentContainerStyle={styles.productList}
-        numColumns={2}
-        showsVerticalScrollIndicator={false}
-        columnWrapperStyle={styles.row}
-      />
+      {filteredProducts.length === 0 ? (
+        <View style={styles.emptyContainer}>
+          <Icon name="shopping-basket" size={64} color="#ccc" />
+          <Text style={styles.emptyText}>No products found</Text>
+          <Text style={styles.emptySubText}>Try adjusting your filters</Text>
+        </View>
+      ) : (
+        <FlatList
+          data={filteredProducts}
+          renderItem={renderProduct}
+          keyExtractor={(item) => item.id}
+          contentContainerStyle={styles.productList}
+          numColumns={2}
+          showsVerticalScrollIndicator={false}
+          columnWrapperStyle={styles.row}
+          refreshing={refreshing}
+          onRefresh={handleRefresh}
+        />
+      )}
 
       {renderFilterModal()}
     </SafeAreaView>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#f8f9fa',
+  },
+  headerContainer: {
+    backgroundColor: '#3498db',
+    paddingHorizontal: 16,
+    paddingVertical: 16,
+    alignItems: 'center',
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+  },
+  header: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#fff',
+    textAlign: 'center',
+    textTransform: 'uppercase',
+  },
+  refreshButton: {
+    padding: 8,
+  },
+  filterBar: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    backgroundColor: '#fff',
+    borderBottomWidth: 1,
+    borderBottomColor: '#e1e5e9',
+  },
+  filterButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    backgroundColor: '#f8f9fa',
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#3498db',
+  },
+  filterButtonText: {
+    marginLeft: 4,
+    color: '#3498db',
+    fontWeight: '500',
+  },
+  resultCount: {
+    color: '#666',
+    fontSize: 14,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    marginTop: 12,
+    color: '#666',
+    fontSize: 16,
+  },
+  productList: {
+    padding: 16,
+  },
+  row: {
+    justifyContent: 'space-between',
+  },
+  productCard: {
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    marginBottom: 16,
+    width: CARD_WIDTH,
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    overflow: 'hidden',
+  },
+  imageContainer: {
+    position: 'relative',
+    height: 150,
+  },
+  image: {
+    width: '100%',
+    height: '100%',
+  },
+  outOfStockBadge: {
+    position: 'absolute',
+    top: 8,
+    left: 8,
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 4,
+  },
+  outOfStockBadgeText: {
+    color: '#fff',
+    fontSize: 10,
+    fontWeight: 'bold',
+  },
+  categoryBadge: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
+    backgroundColor: '#3498db',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 4,
+  },
+  categoryBadgeText: {
+    color: '#fff',
+    fontSize: 10,
+    fontWeight: 'bold',
+  },
+  productContent: {
+    padding: 12,
+  },
+  brandText: {
+    fontSize: 12,
+    color: '#666',
+    marginBottom: 4,
+    textTransform: 'uppercase',
+  },
+  productTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#333',
+    marginBottom: 8,
+    lineHeight: 18,
+  },
+  productPrice: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#e74c3c',
+    marginBottom: 12,
+  },
+  buyNowButton: {
+    backgroundColor: '#3498db',
+    paddingVertical: 8,
+    borderRadius: 6,
+    alignItems: 'center',
+  },
+  buyNowButtonDisabled: {
+    backgroundColor: '#bdc3c7',
+  },
+  buttonText: {
+    color: '#fff',
+    fontWeight: '600',
+    fontSize: 12,
+  },
+  buttonTextDisabled: {
+    color: '#7f8c8d',
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 32,
+  },
+  emptyText: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#666',
+    marginTop: 16,
+    textAlign: 'center',
+  },
+  emptySubText: {
+    fontSize: 14,
+    color: '#999',
+    marginTop: 8,
+    textAlign: 'center',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'flex-end',
+  },
+  filterModal: {
+    backgroundColor: '#fff',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    maxHeight: '80%',
+  },
+  filterHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#e1e5e9',
+  },
+  filterTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#333',
+  },
+  filterContent: {
+    flex: 1,
+    paddingHorizontal: 20,
+  },
+  filterSection: {
+    marginVertical: 16,
+  },
+  filterSectionTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#333',
+    marginBottom: 12,
+  },
+  filterChips: {
+    flexDirection: 'row',
+  },
+  filterChip: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    backgroundColor: '#f8f9fa',
+    borderRadius: 20,
+    marginRight: 8,
+    borderWidth: 1,
+    borderColor: '#e1e5e9',
+  },
+  filterChipActive: {
+    backgroundColor: '#3498db',
+    borderColor: '#3498db',
+  },
+  filterChipText: {
+    fontSize: 14,
+    color: '#666',
+  },
+  filterChipTextActive: {
+    color: '#fff',
+    fontWeight: '500',
+  },
+  priceGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginHorizontal: -4,
+  },
+  priceRangeChip: {
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    backgroundColor: '#f8f9fa',
+    borderRadius: 20,
+    margin: 4,
+    borderWidth: 1,
+    borderColor: '#e1e5e9',
+    minWidth: '45%',
+    alignItems: 'center',
+  },
+  organicFilter: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+  },
+  organicChip: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    backgroundColor: '#f8f9fa',
+    borderRadius: 20,
+    marginRight: 8,
+    marginBottom: 8,
+    borderWidth: 1,
+    borderColor: '#e1e5e9',
+  },
+  sortOptions: {
+    flexDirection: 'column',
+  },
+  sortOption: {
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    backgroundColor: '#f8f9fa',
+    borderRadius: 8,
+    marginBottom: 8,
+    borderWidth: 1,
+    borderColor: '#e1e5e9',
+  },
+  filterActions: {
+    flexDirection: 'row',
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    borderTopWidth: 1,
+    borderTopColor: '#e1e5e9',
+  },
+  resetButton: {
+    flex: 1,
+    paddingVertical: 12,
+    backgroundColor: '#f8f9fa',
+    borderRadius: 8,
+    alignItems: 'center',
+    marginRight: 8,
+    borderWidth: 1,
+    borderColor: '#e1e5e9',
+  },
+  resetButtonText: {
+    color: '#666',
+    fontWeight: '600',
+  },
+  applyButton: {
+    flex: 2,
+    paddingVertical: 12,
+    backgroundColor: '#3498db',
+    borderRadius: 8,
+    alignItems: 'center',
+    marginLeft: 8,
+  },
+  applyButtonText: {
+    color: '#fff',
+    fontWeight: '600',
+  },
+});
 
 export default ShopScreen;
