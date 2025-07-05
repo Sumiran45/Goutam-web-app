@@ -39,16 +39,6 @@ const ArticleItem = ({ item, onPressDelete, onPress }:any) => {
       <Text style={styles.articleTitle}>{item.title}</Text>
       
       <View style={styles.articleFooter}>
-        <View style={styles.articleStats}>
-          <View style={styles.statItem}>
-            <Icon name="heart" size={moderateScale(12)} color={colors.text.light} solid />
-            <Text style={styles.statText}>{item.likes}</Text>
-          </View>
-          <View style={styles.statItem}>
-            <Icon name="comment-alt" size={moderateScale(12)} color={colors.text.light} solid />
-            <Text style={styles.statText}>{item.comments}</Text>
-          </View>
-        </View>
         <View style={styles.readMoreContainer}>
           <Text style={styles.readMoreText}>Read More</Text>
           <Icon name="chevron-right" size={moderateScale(12)} color={colors.primary} style={styles.readMoreIcon} />

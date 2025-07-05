@@ -174,6 +174,7 @@ const styles = StyleSheet.create({
   },
   readMoreIcon: {
     marginLeft: moderateScale(4),
+    marginTop: 5,
   },
 
   // Filter button styles 

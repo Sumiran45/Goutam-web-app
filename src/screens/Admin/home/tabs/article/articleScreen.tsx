@@ -16,14 +16,13 @@ import FilterButton from './filterButton';
 import NewArticleModal from './newArticleModal';
 import ArticleDetailModal from './articleDetail';
 
-// Import styles
 import { globalStyles } from '../../../../../styles/admin/global';
 import { colors, moderateScale } from '../../../../../styles/admin/theme';
 import styles from '../../../../../styles/admin/article.style';
-import { fetchArticles } from '../../../../../controller/Articles.controller';
+import { fetchArticles, updateArticle } from '../../../../../controller/Articles.controller';
 import { deleteArticle } from '../../../../../controller/Articles.controller';
 
-const ArticlesScreen = ({ navigation }:any) => {
+const ArticlesScreen = ({ navigation }: any) => {
   const [articles, setArticles] = useState<any[]>([]);;
   const [filteredArticles, setFilteredArticles] = useState<any[]>([]);;
   const [searchQuery, setSearchQuery] = useState('');
@@ -32,48 +31,48 @@ const ArticlesScreen = ({ navigation }:any) => {
   const [showNewModal, setShowNewModal] = useState(false);
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [selectedArticle, setSelectedArticle] = useState(null);
-  
+
   const loadArticles = async () => {
-      try {
-        setLoading(true);
-        const data = await fetchArticles();
-        setArticles(data);
-        setFilteredArticles(data);
-        
-      } catch (err) {
-        console.error(err);
-        Alert.alert('Error', 'Failed to fetch articles.');
-      } finally {
-        setLoading(false);
-      }
-    };
-    
+    try {
+      setLoading(true);
+      const data = await fetchArticles();
+      setArticles(data);
+      setFilteredArticles(data);
+
+    } catch (err) {
+      console.error(err);
+      Alert.alert('Error', 'Failed to fetch articles.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
     loadArticles();
     setTimeout(() => {
       setLoading(false);
     }, 800);
   }, []);
-  
+
 
   useEffect(() => {
     filterArticles(activeFilter, searchQuery);
   }, [articles, activeFilter, searchQuery]);
 
-  const filterArticles = (filter:any, query = '') => {
+  const filterArticles = (filter: any, query = '') => {
     const now = new Date();
     const oneDay = 24 * 60 * 60 * 1000;
     const oneWeek = 7 * oneDay;
     const oneMonth = 30 * oneDay;
     const oneYear = 365 * oneDay;
-    
+
     let filtered = [...articles];
-    
+
     if (filter !== 'all') {
       filtered = filtered.filter(article => {
         const articleDate = new Date(article.date);
         const diffTime = now.getTime() - articleDate.getTime();
-        
+
         switch (filter) {
           case 'today':
             return diffTime < oneDay;
@@ -88,39 +87,63 @@ const ArticlesScreen = ({ navigation }:any) => {
         }
       });
     }
-    
+
     if (query.trim() !== '') {
       const searchLower = query.toLowerCase();
       filtered = filtered.filter(
-        article => 
+        article =>
           article.title.toLowerCase().includes(searchLower) ||
           article.content.toLowerCase().includes(searchLower) ||
           article.author.toLowerCase().includes(searchLower)
       );
     }
-    
+
     filtered.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-    
+
     setFilteredArticles(filtered);
   };
 
-  const handleAddArticle = (newArticle:any) => {
+  const handleAddArticle = (newArticle: any) => {
     const updatedArticles = [newArticle, ...articles];
     setArticles(updatedArticles);
   };
 
-  const handleDeleteArticle = async (id:any) => {
+  const handleUpdateArticle = async (updatedArticle:any) => {
     try {
-          await deleteArticle(id);
-          const updatedArticles = articles.filter(article => article.id !== id);
-          setArticles(updatedArticles);
+      const apiUpdatedArticle = await updateArticle(
+        updatedArticle.id,
+        updatedArticle.title,
+        updatedArticle.content,
+        updatedArticle.videoUrl
+      );
+
+      const updatedArticles = articles.map(article =>
+        article.id === updatedArticle.id ? { ...article, ...apiUpdatedArticle } : article
+      );
       
-        } catch (error) {
-          Alert.alert('Error', 'Failed to delete Article. Please try again.');
-        }
+      setArticles(updatedArticles);
+      
+      setSelectedArticle(prev => prev ? { ...prev, ...apiUpdatedArticle } : null);
+      
+      return apiUpdatedArticle;
+    } catch (error) {
+      console.error('Error updating article:', error);
+      throw error;
+    }
   };
 
-  const handleArticlePress = (article:any) => {
+  const handleDeleteArticle = async (id: any) => {
+    try {
+      await deleteArticle(id);
+      const updatedArticles = articles.filter(article => article.id !== id);
+      setArticles(updatedArticles);
+
+    } catch (error) {
+      Alert.alert('Error', 'Failed to delete Article. Please try again.');
+    }
+  };
+
+  const handleArticlePress = (article: any) => {
     setSelectedArticle(article);
     setShowDetailModal(true);
   };
@@ -147,7 +170,7 @@ const ArticlesScreen = ({ navigation }:any) => {
             onChangeText={setSearchQuery}
           />
         </View>
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.addButton}
           onPress={() => setShowNewModal(true)}
         >
@@ -161,64 +184,61 @@ const ArticlesScreen = ({ navigation }:any) => {
           </LinearGradient>
         </TouchableOpacity>
       </View>
-      
-      {/* Filter tabs - Updated with better scrolling */}
+
       <View style={styles.filterContainerWrapper}>
-        <ScrollView 
+        <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
           style={styles.filterContainer}
           contentContainerStyle={styles.filterContentContainer}
           bounces={false}
           decelerationRate="fast"
-          snapToInterval={moderateScale(100)} // Snap to make scrolling smoother
+          snapToInterval={moderateScale(100)} 
         >
-          <FilterButton 
-            title="All" 
+          <FilterButton
+            title="All"
             active={activeFilter === 'all'}
             onPress={() => setActiveFilter('all')}
           />
-          <FilterButton 
-            title="Today" 
+          <FilterButton
+            title="Today"
             active={activeFilter === 'today'}
             onPress={() => setActiveFilter('today')}
           />
-          <FilterButton 
-            title="This Week" 
+          <FilterButton
+            title="This Week"
             active={activeFilter === 'week'}
             onPress={() => setActiveFilter('week')}
           />
-          <FilterButton 
-            title="This Month" 
+          <FilterButton
+            title="This Month"
             active={activeFilter === 'month'}
             onPress={() => setActiveFilter('month')}
           />
-          <FilterButton 
-            title="This Year" 
+          <FilterButton
+            title="This Year"
             active={activeFilter === 'year'}
             onPress={() => setActiveFilter('year')}
           />
-          {/* Add some padding at the end to ensure last item is fully visible */}
           <View style={{ width: moderateScale(16) }} />
         </ScrollView>
       </View>
-      
-      {/* Articles list */}
+
       {filteredArticles.length > 0 ? (
         <FlatList
-        data={filteredArticles}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <ArticleItem 
-            item={item} 
-            onPressDelete={() => handleDeleteArticle(item.id)} // FIXED
-            onPress={() => handleArticlePress(item)}
-          />
-        )}
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.articleList}
-      />
-      
+          data={filteredArticles}
+          keyExtractor={(item) => item.id}
+          renderItem={({ item }) => (
+            <ArticleItem
+              item={item}
+              onPressDelete={() => handleDeleteArticle(item.id)} 
+              onPress={() => handleArticlePress(item)}
+            />
+          )}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={styles.articleList}
+        />
+
       ) : (
         <View style={styles.emptyContainer}>
           <Icon name="file-alt" size={moderateScale(48)} color={colors.text.light} />
@@ -228,8 +248,7 @@ const ArticlesScreen = ({ navigation }:any) => {
           </Text>
         </View>
       )}
-      
-      {/* Modals */}
+
       <NewArticleModal
         visible={showNewModal}
         onClose={() => setShowNewModal(false)}
@@ -240,6 +259,14 @@ const ArticlesScreen = ({ navigation }:any) => {
         visible={showDetailModal}
         onClose={() => setShowDetailModal(false)}
         article={selectedArticle}
+        onDelete={async (id: any) => {
+          await handleDeleteArticle(id);
+          setShowDetailModal(false);
+        }}
+        onUpdate={async (article: any) => {
+          await handleUpdateArticle(article);
+          setShowDetailModal(false);
+        }}
       />
     </View>
   );

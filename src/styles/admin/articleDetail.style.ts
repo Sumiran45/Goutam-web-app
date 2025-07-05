@@ -28,6 +28,14 @@ const styles = StyleSheet.create({
   backButton: {
     padding: moderateScale(4),
   },
+  headerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  editButton: {
+    padding: moderateScale(8),
+    marginRight: moderateScale(8),
+  },
   statsContainer: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -51,6 +59,18 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: colors.text.primary,
     marginBottom: moderateScale(16),
+  },
+  titleInput: {
+    fontSize: moderateScale(22),
+    fontWeight: 'bold',
+    color: colors.text.primary,
+    marginBottom: moderateScale(16),
+    borderWidth: 1,
+    borderColor: colors.border.light,
+    borderRadius: moderateScale(8),
+    padding: moderateScale(12),
+    backgroundColor: colors.background.main,
+    minHeight: moderateScale(50),
   },
   authorContainer: {
     flexDirection: 'row',
@@ -99,6 +119,18 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: colors.text.primary,
     marginLeft: moderateScale(8),
+  },
+  videoEditContainer: {
+    marginBottom: moderateScale(12),
+  },
+  videoUrlInput: {
+    borderWidth: 1,
+    borderColor: colors.border.light,
+    borderRadius: moderateScale(8),
+    padding: moderateScale(12),
+    backgroundColor: colors.background.secondary,
+    color: colors.text.primary,
+    fontSize: moderateScale(14),
   },
   videoThumbnailContainer: {
     borderRadius: moderateScale(8),
@@ -200,10 +232,96 @@ const styles = StyleSheet.create({
     color: colors.text.primary,
     textAlign: 'justify',
   },
+  contentInput: {
+    borderWidth: 1,
+    borderColor: colors.border.light,
+    borderRadius: moderateScale(8),
+    padding: moderateScale(12),
+    backgroundColor: colors.background.secondary,
+    color: colors.text.primary,
+    fontSize: moderateScale(16),
+    lineHeight: moderateScale(24),
+    minHeight: moderateScale(150),
+  },
   
   // Bottom spacer
   bottomSpacer: {
     height: moderateScale(32),
+  },
+
+  // Modal Footer Styles
+  modalFooter: {
+    flexDirection: 'row',
+    paddingHorizontal: moderateScale(16),
+    paddingVertical: moderateScale(12),
+    backgroundColor: colors.background.main,
+    borderTopWidth: 1,
+    borderTopColor: colors.border.light,
+  },
+  cancelButton: {
+    flex: 1,
+    paddingVertical: moderateScale(12),
+    paddingHorizontal: moderateScale(16),
+    borderRadius: moderateScale(8),
+    borderWidth: 1,
+    borderColor: colors.border.light,
+    backgroundColor: colors.background.secondary,
+    marginRight: moderateScale(8),
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  cancelButtonText: {
+    color: colors.text.primary,
+    fontSize: moderateScale(14),
+    fontWeight: '500',
+  },
+  saveButton: {
+    flex: 1,
+    paddingVertical: moderateScale(12),
+    paddingHorizontal: moderateScale(16),
+    borderRadius: moderateScale(8),
+    backgroundColor: colors.primary,
+    marginLeft: moderateScale(8),
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  saveButtonText: {
+    color: colors.text.white,
+    fontSize: moderateScale(14),
+    fontWeight: '600',
+  },
+  updateButton: {
+    flex: 1,
+    paddingVertical: moderateScale(12),
+    paddingHorizontal: moderateScale(16),
+    borderRadius: moderateScale(8),
+    backgroundColor: colors.primary,
+    marginHorizontal: moderateScale(4),
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  updateButtonText: {
+    color: colors.text.white,
+    fontSize: moderateScale(14),
+    fontWeight: '600',
+  },
+  deleteButton: {
+    flex: 1,
+    paddingVertical: moderateScale(12),
+    paddingHorizontal: moderateScale(16),
+    borderRadius: moderateScale(8),
+    backgroundColor: colors.error,
+    marginLeft: moderateScale(4),
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  deleteButtonText: {
+    color: colors.text.white,
+    fontSize: moderateScale(14),
+    fontWeight: '600',
+  },
+  disabledButton: {
+    opacity: 0.6,
   },
 });
 

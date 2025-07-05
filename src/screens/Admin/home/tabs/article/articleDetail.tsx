@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -8,12 +8,27 @@ import {
   Alert,
   Linking,
   Image,
+  TextInput,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome5';
 import { colors, moderateScale } from '../../../../../styles/admin/theme';
 import styles from '../../../../../styles/admin/articleDetail.style';
 
-const ArticleDetailModal = ({ visible, onClose, article }:any) => {
+const ArticleDetailModal = ({ visible, onClose, article, onUpdate, onDelete }:any) => {
+  const [isEditing, setIsEditing] = useState(false);
+  const [editedTitle, setEditedTitle] = useState('');
+  const [editedContent, setEditedContent] = useState('');
+  const [editedVideoUrl, setEditedVideoUrl] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
+
+  React.useEffect(() => {
+    if (article) {
+      setEditedTitle(article.title || '');
+      setEditedContent(article.content || '');
+      setEditedVideoUrl(article.videoUrl || '');
+    }
+  }, [article]);
+
   if (!article) return null;
   
   const formattedDate = new Date(article.date).toLocaleDateString('en-US', {
@@ -22,28 +37,27 @@ const ArticleDetailModal = ({ visible, onClose, article }:any) => {
     day: 'numeric'
   });
 
-  const extractYouTubeId = (url: string) => {
+  const extractYouTubeId = (url:any) => {
     const regExp = /^.*((youtu.be\/)|(v\/)|(\/u\/\w\/)|(embed\/)|(watch\?))\??v?=?([^#&?]*).*/;
     const match = url.match(regExp);
     return (match && match[7].length === 11) ? match[7] : null;
   };
 
-  const getYouTubeThumbnail = (videoId: string) => {
+  const getYouTubeThumbnail = (videoId:any) => {
     return `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
   };
 
-  // Hardcoded video URLs for testing
   const getTestVideoUrl = () => {
     const testVideos = [
-      'https://www.youtube.com/watch?v=dQw4w9WgXcQ', // Rick Roll
-      'https://www.youtube.com/watch?v=9bZkp7q19f0', // Gangnam Style
-      'https://www.youtube.com/watch?v=kJQP7kiw5Fk', // Despacito
-      'https://youtu.be/WZPY3xVedQc', // Your hardcoded URL
+      'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+      'https://www.youtube.com/watch?v=9bZkp7q19f0',
+      'https://www.youtube.com/watch?v=kJQP7kiw5Fk',
+      'https://youtu.be/WZPY3xVedQc',
     ];
     return testVideos[Math.floor(Math.random() * testVideos.length)];
   };
 
-  const openVideo = async (videoUrl: string) => {
+  const openVideo = async (videoUrl:any) => {
     try {
       const supported = await Linking.canOpenURL(videoUrl);
       if (supported) {
@@ -64,12 +78,69 @@ const ArticleDetailModal = ({ visible, onClose, article }:any) => {
     }
   };
 
-  const videoUrl = article.videoUrl || getTestVideoUrl();
+  const handleSaveUpdate = async () => {
+    if (!editedTitle.trim()) {
+      Alert.alert('Error', 'Please enter a title for the article.');
+      return;
+    }
+    
+    if (!editedContent.trim()) {
+      Alert.alert('Error', 'Please enter content for the article.');
+      return;
+    }
+
+    try {
+      setIsSaving(true);
+      const updatedArticle = {
+        ...article,
+        title: editedTitle.trim(),
+        content: editedContent.trim(),
+        videoUrl: editedVideoUrl.trim(),
+      };
+
+      if (onUpdate) {
+        await onUpdate(updatedArticle);
+        setIsEditing(false);
+        Alert.alert('Success', 'Article updated successfully!');
+      }
+    } catch (error) {
+      console.error('Error updating article:', error);
+      Alert.alert('Error', 'Failed to update article. Please try again.');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setEditedTitle(article.title || '');
+    setEditedContent(article.content || '');
+    setEditedVideoUrl(article.videoUrl || '');
+    setIsEditing(false);
+  };
+
+  const handleDelete = () => {
+    Alert.alert(
+      'Delete Article',
+      'Are you sure you want to delete this article? This action cannot be undone.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { 
+          text: 'Delete', 
+          style: 'destructive',
+          onPress: () => {
+            if (onDelete) onDelete(article.id);
+          }
+        }
+      ]
+    );
+  };
+
+  const videoUrl = (isEditing ? editedVideoUrl : article.videoUrl) || getTestVideoUrl();
   const videoId = extractYouTubeId(videoUrl);
   const thumbnailUrl = videoId ? getYouTubeThumbnail(videoId) : null;
 
   const VideoSection = () => {
-    const showVideo = true; // Change this to article.videoUrl to restore original behavior
+    const showVideo = true;
 
     if (!showVideo) return null;
 
@@ -80,43 +151,55 @@ const ArticleDetailModal = ({ visible, onClose, article }:any) => {
           <Text style={styles.videoSectionTitle}>Featured Video</Text>
         </View>
 
-        <TouchableOpacity
-          style={styles.videoThumbnailContainer}
-          onPress={() => openVideo(videoUrl)}
-          activeOpacity={0.8}
-        >
-          <View style={styles.videoThumbnail}>
-            {thumbnailUrl ? (
-              <Image
-                source={{ uri: thumbnailUrl }}
-                style={styles.videoThumbnailImage}
-                resizeMode="cover"
-                onError={() => console.log('Failed to load thumbnail')}
-              />
-            ) : (
-              // Fallback gradient background if thumbnail fails
-              <View style={styles.videoThumbnailFallback}>
-                <Icon name="youtube" size={moderateScale(32)} color={colors.error} />
-              </View>
-            )}
-            <View style={styles.videoThumbnailOverlay}>
-              <View style={styles.playButton}>
-                <Icon name="play" size={moderateScale(20)} color="#fff" />
+        {isEditing ? (
+          <View style={styles.videoEditContainer}>
+            <TextInput
+              style={styles.videoUrlInput}
+              placeholder="YouTube URL (optional)"
+              placeholderTextColor={colors.text.placeholder}
+              value={editedVideoUrl}
+              onChangeText={setEditedVideoUrl}
+              multiline={false}
+            />
+          </View>
+        ) : (
+          <TouchableOpacity
+            style={styles.videoThumbnailContainer}
+            onPress={() => openVideo(videoUrl)}
+            activeOpacity={0.8}
+          >
+            <View style={styles.videoThumbnail}>
+              {thumbnailUrl ? (
+                <Image
+                  source={{ uri: thumbnailUrl }}
+                  style={styles.videoThumbnailImage}
+                  resizeMode="cover"
+                  onError={() => console.log('Failed to load thumbnail')}
+                />
+              ) : (
+                <View style={styles.videoThumbnailFallback}>
+                  <Icon name="youtube" size={moderateScale(32)} color={colors.error} />
+                </View>
+              )}
+              <View style={styles.videoThumbnailOverlay}>
+                <View style={styles.playButton}>
+                  <Icon name="play" size={moderateScale(20)} color="#fff" />
+                </View>
               </View>
             </View>
-          </View>
 
-          <View style={styles.videoInfo}>
-            <Text style={styles.videoTitle}>Watch Video</Text>
-            <Text style={styles.videoSubtitle}>Tap to open in your video app</Text>
-            {!article.videoUrl && (
-              <Text style={styles.testVideoLabel}>(Test Video)</Text>
-            )}
-          </View>
-        </TouchableOpacity>
+            <View style={styles.videoInfo}>
+              <Text style={styles.videoTitle}>Watch Video</Text>
+              <Text style={styles.videoSubtitle}>Tap to open in your video app</Text>
+              {!article.videoUrl && (
+                <Text style={styles.testVideoLabel}>(Test Video)</Text>
+              )}
+            </View>
+          </TouchableOpacity>
+        )}
 
         <Text style={styles.videoDescription}>
-          Tap above to watch the video for additional insights on this topic.
+          {isEditing ? 'Enter a YouTube URL for the article video' : 'Tap above to watch the video for additional insights on this topic.'}
         </Text>
       </View>
     );
@@ -135,24 +218,31 @@ const ArticleDetailModal = ({ visible, onClose, article }:any) => {
             <TouchableOpacity onPress={onClose} style={styles.backButton}>
               <Icon name="arrow-left" size={moderateScale(16)} color={colors.text.primary} />
             </TouchableOpacity>
-            <View style={styles.statsContainer}>
-              <View style={styles.statItem}>
-                <Icon name="heart" size={moderateScale(12)} color={colors.text.light} solid />
-                <Text style={styles.statText}>{article.likes}</Text>
-              </View>
-              <View style={styles.statItem}>
-                <Icon name="comment-alt" size={moderateScale(12)} color={colors.text.light} solid />
-                <Text style={styles.statText}>{article.comments}</Text>
-              </View>
-              <View style={styles.statItem}>
-                <Icon name="youtube" size={moderateScale(12)} color={colors.error} />
-                <Text style={styles.statText}>Video</Text>
-              </View>
+            <View style={styles.headerActions}>
+              {!isEditing && (
+                <TouchableOpacity 
+                  onPress={() => setIsEditing(true)} 
+                  style={styles.editButton}
+                >
+                  <Icon name="edit" size={moderateScale(16)} color={colors.primary} />
+                </TouchableOpacity>
+              )}
             </View>
           </View>
           
           <ScrollView style={styles.modalBody}>
-            <Text style={styles.articleTitle}>{article.title}</Text>
+            {isEditing ? (
+              <TextInput
+                style={styles.titleInput}
+                placeholder="Article Title"
+                placeholderTextColor={colors.text.placeholder}
+                value={editedTitle}
+                onChangeText={setEditedTitle}
+                multiline={true}
+              />
+            ) : (
+              <Text style={styles.articleTitle}>{article.title}</Text>
+            )}
             
             <View style={styles.authorContainer}>
               <View style={styles.authorAvatar}>
@@ -171,11 +261,63 @@ const ArticleDetailModal = ({ visible, onClose, article }:any) => {
                 <Icon name="file-alt" size={moderateScale(16)} color={colors.text.secondary} />
                 <Text style={styles.contentSectionTitle}>Article Content</Text>
               </View>
-              <Text style={styles.articleContent}>{article.content}</Text>
+              
+              {isEditing ? (
+                <TextInput
+                  style={styles.contentInput}
+                  placeholder="Article Content"
+                  placeholderTextColor={colors.text.placeholder}
+                  value={editedContent}
+                  onChangeText={setEditedContent}
+                  multiline={true}
+                  textAlignVertical="top"
+                />
+              ) : (
+                <Text style={styles.articleContent}>{article.content}</Text>
+              )}
             </View>
 
             <View style={styles.bottomSpacer} />
           </ScrollView>
+
+          {/* Action Buttons Footer */}
+          <View style={styles.modalFooter}>
+            {isEditing ? (
+              <>
+                <TouchableOpacity
+                  style={styles.cancelButton}
+                  onPress={handleCancelEdit}
+                  disabled={isSaving}
+                >
+                  <Text style={styles.cancelButtonText}>Cancel</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.saveButton, isSaving && styles.disabledButton]}
+                  onPress={handleSaveUpdate}
+                  disabled={isSaving}
+                >
+                  <Text style={styles.saveButtonText}>
+                    {isSaving ? 'Saving...' : 'Save Changes'}
+                  </Text>
+                </TouchableOpacity>
+              </>
+            ) : (
+              <>
+                <TouchableOpacity
+                  style={styles.updateButton}
+                  onPress={() => setIsEditing(true)}
+                >
+                  <Text style={styles.updateButtonText}>Update</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.deleteButton]}
+                  onPress={handleDelete}
+                >
+                  <Text style={styles.deleteButtonText}>Delete</Text>
+                </TouchableOpacity>
+              </>
+            )}
+          </View>
         </View>
       </View>
     </Modal>
