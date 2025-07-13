@@ -3,7 +3,12 @@ import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-nati
 import { colors, moderateScale } from '../../../styles/admin/theme';
 import { globalStyles } from '../../../styles/admin/global';
 
-const FilterButtons = ({ activeFilter, onFilterChange }:any) => {
+interface FilterButtonsProps {
+  activeFilter: string;
+  onFilterChange: (filter: string) => void;
+}
+
+const FilterButtons: React.FC<FilterButtonsProps> = ({ activeFilter, onFilterChange }) => {
   const filters = [
     { id: 'all', label: 'All' },
     { id: 'day', label: 'Today' },

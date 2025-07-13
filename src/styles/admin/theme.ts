@@ -17,8 +17,6 @@ export const colors = {
   info: '#2196F3',
   error: '#FF5252',
   white: '#fff',
-  // background: '#f6f8fa',
-  // border: '#eee',
   text: {
     primary: '#333',
     secondary: '#666',
@@ -27,8 +25,10 @@ export const colors = {
     placeholder: '#999',
   },
   background: {
-    primary: '#f6f8fa',
-    secondary: '#fff',
+    main: '#f6f8fa',        // Main background color
+    primary: '#f6f8fa',     // Primary background (keeping existing)
+    secondary: '#fff',      // Secondary background (keeping existing)
+    card: '#fff',           // Card background color
     overlay: 'rgba(0, 0, 0, 0.5)',
   },
   border: {

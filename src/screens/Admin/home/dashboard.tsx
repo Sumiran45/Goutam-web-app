@@ -10,16 +10,18 @@ import { globalStyles } from '../../../styles/admin/global';
 import { styles } from '../../../styles/admin/admin.style';
 import { colors } from '../../../styles/admin/theme';
 
-import { recentActivities } from '../../../components/Data/activity';
 import { fetchUsers } from '../../../Api/AdminDasboard.api';
 import { fetchArticles } from '../../../controller/Articles.controller';
 import { fetchProducts } from '../../../controller/Product.controller';
+import { activityController, Activity } from '../../../controller/Activity.controller';
 
 const DashboardContent = () => {
   const navigation = useNavigation();
   const [userCount, setUserCount] = useState<number | null>(null);
   const [articleCount, setArticleCount] = useState<number | null>(null);
   const [productCount, setProductCount] = useState<number>(0);
+  const [recentActivities, setRecentActivities] = useState<Activity[]>([]);
+  const [loading, setLoading] = useState(true);
   
   useEffect(() => {
     const getUsers = async () => {
@@ -40,15 +42,28 @@ const DashboardContent = () => {
           setArticleCount(articles.length);
         }
       } catch (error) {
-        console.error('Failed to fetch user count:', error);
+        console.error('Failed to fetch article count:', error);
+      }
+    };
+
+    const getRecentActivities = async () => {
+      try {
+        const activities = await activityController.getActivities({ limit: 3 });
+        setRecentActivities(activities);
+      } catch (error) {
+        console.error('Failed to fetch recent activities:', error);
+        setRecentActivities([]);
+      } finally {
+        setLoading(false);
       }
     };
 
     getUsers();
     getArticles();
+    getRecentActivities();
   }, []);
 
-    useEffect(() => {
+  useEffect(() => {
     const loadProductCount = async () => {
       try {
         const products = await fetchProducts();
@@ -59,6 +74,7 @@ const DashboardContent = () => {
     };
     loadProductCount();
   }, []);
+
   const navigateToAllActivities = () => {
     navigation.navigate('AllActivities' as never);
   };
@@ -85,14 +101,19 @@ const DashboardContent = () => {
         </View>
 
         <View style={styles.activityList}>
-          {recentActivities.slice(0, 3).map((activity:any, index:any) => (
-            <ActivityItem
-              key={`activity-${index}`}
-              text={activity.text}
-              time={activity.time}
-              icon={activity.icon}
-            />
-          ))}
+          {loading ? (
+            <Text style={styles.loadingText}>Loading activities...</Text>
+          ) : recentActivities.length > 0 ? (
+            recentActivities.map((activity, index) => (
+              <ActivityItem
+                key={`activity-${activity.id}-${index}`}
+                activity={activity}
+                showUserName={true}
+              />
+            ))
+          ) : (
+            <Text style={styles.noActivitiesText}>No recent activities found</Text>
+          )}
         </View>
       </View>
     </ScrollView>

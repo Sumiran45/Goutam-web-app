@@ -512,4 +512,18 @@ export const styles = StyleSheet.create({
     flex: 1,
     marginLeft: moderateScale(8),
   },
+  loadingText: {
+  fontSize: moderateScale(14),
+  color: colors.text.secondary,
+  textAlign: 'center',
+  fontStyle: 'italic',
+  paddingVertical: moderateScale(20),
+},
+noActivitiesText: {
+  fontSize: moderateScale(14),
+  color: colors.text.light,
+  textAlign: 'center',
+  paddingVertical: moderateScale(20),
+  fontWeight: '500',
+},
 });

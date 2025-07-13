@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -12,51 +12,73 @@ import { useNavigation } from '@react-navigation/native';
 import ActivityItem from '../home/activityItem';
 import FilterButtons from './filterButton';
 
-// Import styles and data
+// Import styles and controller
 import { globalStyles } from '../../../styles/admin/global';
 import { colors, moderateScale } from '../../../styles/admin/theme';
-import { allActivities } from '../../../components/Data/activity';
+import { activityController, Activity } from '../../../controller/Activity.controller';
+
+type FilterType = 'all' | 'day' | 'week' | 'month' | 'year';
 
 const AllActivitiesScreen = () => {
   const navigation = useNavigation();
-  const [activeFilter, setActiveFilter] = useState('all');
-  const [activities, setActivities] = useState(allActivities);
+  const [activeFilter, setActiveFilter] = useState<FilterType>('all');
+  const [activities, setActivities] = useState<Activity[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const handleFilterChange = (filter:any) => {
-    setActiveFilter(filter);
-    
-    if (filter === 'all') {
-      setActivities(allActivities);
-    } else {
-      const now = new Date();
-      let timeAgo;
-      
-      switch (filter) {
-        case 'day':
-          timeAgo = new Date(now.setDate(now.getDate() - 1));
-          break;
-        case 'week':
-          timeAgo = new Date(now.setDate(now.getDate() - 7));
-          break;
-        case 'month':
-          timeAgo = new Date(now.setMonth(now.getMonth() - 1));
-          break;
-        case 'year':
-          timeAgo = new Date(now.setFullYear(now.getFullYear() - 1));
-          break;
-        default:
-          timeAgo = null;
-      }
-      
-      if (timeAgo) {
-        const filteredActivities = allActivities.filter((_, index) => {
-          return index % (filter === 'day' ? 5 : filter === 'week' ? 3 : filter === 'month' ? 2 : 1) === 0;
-        });
-        
-        setActivities(filteredActivities);
-      }
+  useEffect(() => {
+    loadActivities();
+  }, []);
+
+  const loadActivities = async () => {
+    try {
+      setLoading(true);
+      const fetchedActivities = await activityController.getActivities({ limit: 50 });
+      const sortedActivities = fetchedActivities.sort((a, b) => 
+        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      );
+      setActivities(sortedActivities);
+    } catch (error) {
+      console.error('Failed to load activities:', error);
+      setActivities([]);
+    } finally {
+      setLoading(false);
     }
   };
+
+  const handleFilterChange = async (filter: FilterType) => {
+    setActiveFilter(filter);
+    
+    try {
+      setLoading(true);
+      let filteredActivities: Activity[] = [];
+      
+      if (filter === 'all') {
+        filteredActivities = await activityController.getActivities({ limit: 50 });
+      } else {
+        filteredActivities = await activityController.getActivitiesByTimeFilter(filter);
+      }
+      
+      // Sort activities by created_at in descending order (most recent first)
+      const sortedActivities = filteredActivities.sort((a, b) => 
+        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      );
+      
+      setActivities(sortedActivities);
+    } catch (error) {
+      console.error('Failed to filter activities:', error);
+      setActivities([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const renderActivityItem = ({ item }: { item: Activity }) => (
+    <ActivityItem
+      activity={item}
+      showUserName={true}
+      showEntityName={true}
+    />
+  );
 
   return (
     <SafeAreaView style={globalStyles.container}>
@@ -73,18 +95,16 @@ const AllActivitiesScreen = () => {
       <FlatList
         data={activities}
         contentContainerStyle={styles.listContainer}
-        renderItem={({ item }) => (
-          <ActivityItem
-            text={item.text}
-            time={item.time}
-            icon={item.icon}
-          />
-        )}
-        keyExtractor={(_, index) => `activity-${index}`}
+        renderItem={renderActivityItem}
+        keyExtractor={(item) => `activity-${item.id}`}
+        refreshing={loading}
+        onRefresh={loadActivities}
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
             <Icon name="inbox" size={moderateScale(48)} color={colors.text.light} />
-            <Text style={styles.emptyText}>No activities found for this filter</Text>
+            <Text style={styles.emptyText}>
+              {loading ? 'Loading activities...' : 'No activities found for this filter'}
+            </Text>
           </View>
         }
       />
