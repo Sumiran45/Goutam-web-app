@@ -51,6 +51,7 @@ const TabIcon = ({ iconName, focused }:any) => (
 const AppNavigator = () => {
   return (
     <Tab.Navigator
+      initialRouteName="Calendar"
       screenOptions={({ route }) => ({
         tabBarIcon: ({ focused }) => {
           let iconName;

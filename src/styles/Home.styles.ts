@@ -3,7 +3,7 @@ import { StyleSheet } from 'react-native';
 export const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f9f9f9',
+    backgroundColor: '#f5f6fa',
   },
   header: {
     backgroundColor: '#3498db',
@@ -18,11 +18,212 @@ export const styles = StyleSheet.create({
   calendar: {
     borderBottomWidth: 1,
     borderBottomColor: '#e0e0e0',
+    backgroundColor: '#ffffff',
+    marginBottom: 10,
   },
   contentContainer: {
     flex: 1,
     padding: 15,
   },
+  addButton: {
+    flexDirection: 'row',
+    backgroundColor: '#3498db',
+    padding: 15,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginVertical: 15,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  addButtonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: '600',
+    marginLeft: 10,
+  },
+  todaysLogContainer: {
+    backgroundColor: '#ffffff',
+    borderRadius: 10,
+    padding: 15,
+    marginTop: 15,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 15,
+    color: '#2d4150',
+  },
+  symptomItem: {
+    flexDirection: 'row',
+    marginBottom: 10,
+    alignItems: 'center',
+  },
+  symptomLabel: {
+    fontWeight: '600',
+    color: '#2d4150',
+    width: 100,
+  },
+  symptomValue: {
+    flex: 1,
+    color: '#555',
+  },
+  notesContainer: {
+    marginTop: 15,
+    paddingTop: 15,
+    borderTopWidth: 1,
+    borderTopColor: '#eee',
+  },
+  notesLabel: {
+    fontWeight: '600',
+    color: '#2d4150',
+    marginBottom: 5,
+  },
+  notesText: {
+    color: '#555',
+    lineHeight: 20,
+  },
+  modalContainer: {
+    flex: 1,
+    backgroundColor: '#f5f6fa',
+    padding: 10,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: '#e0e0e0',
+    backgroundColor: '#ffffff',
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#2d4150',
+  },
+  closeButton: {
+    padding: 5,
+  },
+
+  // Symptom Form Styles
+  loadingContainer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(248, 250, 252, 0.9)',
+    zIndex: 1000,
+  },
+  formGroup: {
+    marginBottom: 20,
+  },
+  label: {
+    fontSize: 16,
+    marginBottom: 8,
+    color: '#2d4150',
+    fontWeight: '500',
+  },
+  pickerContainer: {
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 8,
+    overflow: 'hidden',
+    backgroundColor: '#ffffff',
+  },
+  picker: {
+    height: 50,
+    color: '#2d4150',
+  },
+  toggleGroup: {
+    marginBottom: 20,
+  },
+  toggleContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginTop: 5,
+  },
+  toggleButton: {
+    paddingVertical: 10,
+    paddingHorizontal: 15,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#ddd',
+    marginRight: 10,
+    marginBottom: 10,
+    backgroundColor: '#f8f9fa',
+  },
+  toggleButtonActive: {
+    backgroundColor: '#e3f2fd',
+    borderColor: '#90caf9',
+  },
+  toggleText: {
+    color: '#2d4150',
+    fontSize: 14,
+  },
+  // Input styles
+  input: {
+    backgroundColor: '#ffffff',
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 8,
+    padding: 12,
+    fontSize: 16,
+    color: '#2d4150',
+    marginBottom: 16,
+  },
+  textInput: {
+    backgroundColor: '#ffffff',
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 8,
+    padding: 12,
+    fontSize: 16,
+    color: '#2d4150',
+    minHeight: 100,
+    textAlignVertical: 'top',
+    marginBottom: 16,
+  },
+  buttonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 20,
+  },
+  cancelButton: {
+    flex: 1,
+    marginRight: 10,
+    backgroundColor: '#f0f0f0',
+  },
+  submitButton: {
+    flex: 2,
+    backgroundColor: '#3498db',
+  },
+  buttonText: {
+    color: '#ffffff',
+    fontWeight: '600',
+  },
+  cancelButtonText: {
+    color: '#2d4150',
+    fontWeight: '600',
+  },
+  errorText: {
+    color: '#e74c3c',
+    fontSize: 14,
+    marginTop: 5,
+  },
+
+  // Home Screen Styles
   tipsContainer: {
     backgroundColor: '#ffffff',
     borderRadius: 10,

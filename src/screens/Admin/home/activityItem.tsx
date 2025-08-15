@@ -2,7 +2,7 @@ import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome5';
 import { colors, moderateScale } from '../../../styles/admin/theme';
-import { Activity } from '../../../controller/Activity.controller';
+import { Activity, activityController } from '../../../controller/Activity.controller';
 
 interface ActivityItemProps {
   activity: Activity;
@@ -31,25 +31,9 @@ const ActivityItem: React.FC<ActivityItemProps> = ({
 
   const getFormattedTime = () => {
     try {
-      const now = new Date();
-      const activityDate = new Date(activity.created_at);
-      const diffInMinutes = Math.floor((now.getTime() - activityDate.getTime()) / (1000 * 60));
-
-      if (diffInMinutes < 1) {
-        return 'Just now';
-      } else if (diffInMinutes < 60) {
-        return `${diffInMinutes} min ago`;
-      } else if (diffInMinutes < 1440) { 
-        const hours = Math.floor(diffInMinutes / 60);
-        return `${hours} hour${hours > 1 ? 's' : ''} ago`;
-      } else if (diffInMinutes < 10080) {
-        const days = Math.floor(diffInMinutes / 1440);
-        return `${days} day${days > 1 ? 's' : ''} ago`;
-      } else {
-        return activityDate.toLocaleDateString();
-      }
+      return activityController.formatTimeAgo(activity.created_at);
     } catch (error) {
-      console.error('Error formatting time:', error);
+      console.error('Error formatting time in ActivityItem:', error);
       return 'Unknown time';
     }
   };

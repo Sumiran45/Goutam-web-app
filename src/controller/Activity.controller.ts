@@ -152,12 +152,84 @@ class ActivityController {
     };
   }
 
+  private parseCreatedAt(createdAtString: string): Date {
+    try {
+      console.log('Original created_at from database:', createdAtString);
+      
+      let dateString = createdAtString;
+      
+      if (dateString.includes(' ') && !dateString.includes('T')) {
+        dateString = dateString.replace(' ', 'T');
+        if (!dateString.includes('Z') && !dateString.includes('+') && !dateString.includes('-')) {
+          dateString += 'Z';
+        }
+      }
+      
+      if (dateString.includes('T') && !dateString.includes('Z') && !dateString.includes('+') && !dateString.includes('-')) {
+        dateString += 'Z';
+      }
+      
+      const parsedDate = new Date(dateString);
+      
+      if (isNaN(parsedDate.getTime())) {
+        throw new Error(`Invalid date: ${createdAtString}`);
+      }
+      
+      console.log('Parsed date:', parsedDate.toISOString());
+      return parsedDate;
+    } catch (error) {
+      console.error('Error parsing created_at:', error);
+      console.error('Original value:', createdAtString);
+      return new Date();
+    }
+  }
+
+  formatTimeAgo(createdAtString: string): string {
+    try {
+      const now = new Date();
+      const activityDate = this.parseCreatedAt(createdAtString);
+      
+      const diffInMs = now.getTime() - activityDate.getTime();
+      const diffInMinutes = Math.floor(diffInMs / (1000 * 60));
+      const diffInHours = Math.floor(diffInMs / (1000 * 60 * 60));
+      const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
+
+      console.log('Time calculation:', {
+        now: now.toISOString(),
+        activityDate: activityDate.toISOString(),
+        diffInMs,
+        diffInMinutes,
+        diffInHours,
+        diffInDays
+      });
+
+      if (diffInMinutes < 1) {
+        return 'Just now';
+      } else if (diffInMinutes < 60) {
+        return `${diffInMinutes} min ago`;
+      } else if (diffInHours < 24) {
+        return `${diffInHours} hour${diffInHours > 1 ? 's' : ''} ago`;
+      } else if (diffInDays < 7) {
+        return `${diffInDays} day${diffInDays > 1 ? 's' : ''} ago`;
+      } else {
+        return activityDate.toLocaleDateString('en-US', {
+          month: 'short',
+          day: 'numeric',
+          year: activityDate.getFullYear() !== now.getFullYear() ? 'numeric' : undefined
+        });
+      }
+    } catch (error) {
+      console.error('Error formatting time ago:', error);
+      return 'Unknown time';
+    }
+  }
+
   formatActivityForDisplay(activity: Activity): FormattedActivity {
     try {
-      const createdAt = new Date(activity.created_at);
+      const activityDate = this.parseCreatedAt(activity.created_at);
       
       // Use date-fns for better formatting
-      const formattedTime = format(createdAt, 'MMM dd, yyyy HH:mm');
+      const formattedTime = format(activityDate, 'MMM dd, yyyy HH:mm');
       
       return {
         text: activity.description || activity.title,
@@ -166,37 +238,11 @@ class ActivityController {
       };
     } catch (error) {
       console.error('Error formatting activity:', error);
-      // Fallback to the original time ago format
       return {
         text: activity.description || activity.title || 'Unknown activity',
         time: this.formatTimeAgo(activity.created_at),
         icon: activity.icon || 'bell'
       };
-    }
-  }
-
-  private formatTimeAgo(dateString: string): string {
-    try {
-      const now = new Date();
-      const activityDate = new Date(dateString);
-      const diffInMinutes = Math.floor((now.getTime() - activityDate.getTime()) / (1000 * 60));
-
-      if (diffInMinutes < 1) {
-        return 'Just now';
-      } else if (diffInMinutes < 60) {
-        return `${diffInMinutes} min ago`;
-      } else if (diffInMinutes < 1440) { // 24 hours
-        const hours = Math.floor(diffInMinutes / 60);
-        return `${hours} hour${hours > 1 ? 's' : ''} ago`;
-      } else if (diffInMinutes < 10080) { // 7 days
-        const days = Math.floor(diffInMinutes / 1440);
-        return `${days} day${days > 1 ? 's' : ''} ago`;
-      } else {
-        return activityDate.toLocaleDateString();
-      }
-    } catch (error) {
-      console.error('Error formatting time ago:', error);
-      return 'Unknown time';
     }
   }
 
