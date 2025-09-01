@@ -54,6 +54,9 @@ export default function RegisterScreen({ navigation }: any) {
     handlePasswordChange, handleConfirmPasswordChange,
     togglePasswordVisibility, toggleConfirmPasswordVisibility,
     handleRegister,
+    verifyEmail,
+    verifyPhone,
+    resendVerificationCode,
     updateOnboardingData,
   } = useRegister(navigation, setIsLoading);
 
@@ -91,20 +94,54 @@ export default function RegisterScreen({ navigation }: any) {
 
     try {
       setIsVerifying(true);
-      await new Promise(resolve => setTimeout(resolve, 2000));
       
+      let verificationResult;
+      
+      // Call appropriate verification endpoint based on registration type
+      if (registrationType === 'email' && email) {
+        verificationResult = await verifyEmail(email, verificationCode);
+      } else if (registrationType === 'phone' && phoneNumber) {
+        verificationResult = await verifyPhone(phoneNumber, verificationCode);
+      } else {
+        Alert.alert('Error', 'No contact information found for verification.');
+        setIsVerifying(false);
+        return;
+      }
+
       setIsVerifying(false);
-      setShowVerification(false);
-      setShowOnboarding(true);
+
+      if (verificationResult && verificationResult.success) {
+        Alert.alert('Success', 'Verification completed successfully!');
+        setVerificationCode('');
+        setShowVerification(false);
+        setShowOnboarding(true);
+      } else {
+        Alert.alert('Verification Failed', 'Invalid verification code. Please try again.');
+      }
     } catch (error) {
       setIsVerifying(false);
-      Alert.alert('Verification Failed', 'Invalid verification code. Please try again.');
+      Alert.alert('Verification Failed', 'An error occurred during verification. Please try again.');
     }
   };
 
   const handleResendCode = async () => {
     try {
-      Alert.alert('Code Sent', 'A new verification code has been sent to your email.');
+      let resendResult;
+      
+      if (registrationType === 'email' && email) {
+        resendResult = await resendVerificationCode(email, undefined);
+      } else if (registrationType === 'phone' && phoneNumber) {
+        resendResult = await resendVerificationCode(undefined, phoneNumber);
+      } else {
+        Alert.alert('Error', 'No contact information found to resend code.');
+        return;
+      }
+
+      if (resendResult && resendResult.success) {
+        Alert.alert('Success', `A new verification code has been sent to your ${registrationType}.`);
+      } else {
+        Alert.alert('Error', 'Failed to resend verification code. Please try again.');
+      }
     } catch (error) {
       Alert.alert('Error', 'Failed to resend verification code. Please try again.');
     }

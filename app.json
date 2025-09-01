@@ -1,29 +1,57 @@
 {
   "expo": {
-    "name": "Goutam-web-app",
-    "slug": "Goutam-web-app",
+    "name": "Period bear",
+    "slug": "Period-bear",
     "version": "1.0.0",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
+    "icon": "./assets/icon.png",
     "splash": {
+      "image": "./assets/splash.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
+    "assetBundlePatterns": ["**/*"],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.sumi45.goutamwebapp",
+      "buildNumber": "1",
+      "infoPlist": {
+        "NSCameraUsageDescription": "This app uses camera for scanning and photo features",
+        "NSLocationWhenInUseUsageDescription": "This app uses location for location-based services",
+        "NSNotificationAlwaysAndWhenInUseUsageDescription": "This app sends notifications for updates"
+      }
     },
     "android": {
       "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.sumi45.Goutamwebapp"
+      "package": "com.sumi45.goutamwebapp",
+      "versionCode": 1,
+      "permissions": [
+        "CAMERA",
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION",
+        "NOTIFICATIONS",
+        "INTERNET",
+        "ACCESS_NETWORK_STATE"
+      ]
     },
-    "web": {},
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
     "extra": {
       "eas": {
         "projectId": "b49a53a4-2916-49e4-9f58-466013d5da3d"
       }
+    },
+    "updates": {
+      "url": "https://u.expo.dev/b49a53a4-2916-49e4-9f58-466013d5da3d"
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
     }
   }
 }

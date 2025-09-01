@@ -58,6 +58,7 @@ export const useRegister = (navigation: any, setIsLoading: any) => {
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
+
   const handleRegister = async (onboardingData?: OnboardingData) => {
     if (!validate()) {
       setIsLoading(false);
@@ -95,7 +96,7 @@ export const useRegister = (navigation: any, setIsLoading: any) => {
 
       if (res.status === 200 || res.status === 201) {
         Alert.alert('Success', 'Account created successfully. Please check your email for verification code.');
-        return { success: true, data: res.data, userId: res.data?.id || res.data?.user?.id };
+        return { success: true, data: res.data, userId: res.data?.user?.id || res.data?.id };
       } else {
         return { success: false };
       }
@@ -115,6 +116,90 @@ export const useRegister = (navigation: any, setIsLoading: any) => {
         message = 'User with this username, email, or phone already exists';
       } else {
         message = err.response?.data?.detail || err.message || 'Registration failed';
+      }
+
+      Alert.alert('Error', message);
+      return { success: false };
+    }
+  };
+
+  // New function to verify email
+  const verifyEmail = async (email: string, code: string) => {
+    try {
+      const res = await api.post('/verify-email', {
+        email: email,
+        code: code
+      });
+
+      if (res.status === 200) {
+        return { success: true, data: res.data };
+      } else {
+        return { success: false };
+      }
+    } catch (err: any) {
+      console.error('Email verification error:', err.response?.data);
+
+      let message = 'Email verification failed';
+      if (err.response?.data?.detail) {
+        message = err.response.data.detail;
+      }
+
+      Alert.alert('Error', message);
+      return { success: false };
+    }
+  };
+
+  // New function to verify phone
+  const verifyPhone = async (phone: string, code: string) => {
+    try {
+      const res = await api.post('/verify-phone', {
+        phone: phone,
+        code: code
+      });
+
+      if (res.status === 200) {
+        return { success: true, data: res.data };
+      } else {
+        return { success: false };
+      }
+    } catch (err: any) {
+      console.error('Phone verification error:', err.response?.data);
+
+      let message = 'Phone verification failed';
+      if (err.response?.data?.detail) {
+        message = err.response.data.detail;
+      }
+
+      Alert.alert('Error', message);
+      return { success: false };
+    }
+  };
+
+  // New function to resend verification code
+  const resendVerificationCode = async (email?: string, phone?: string) => {
+    try {
+      const requestBody: any = {};
+      
+      if (email) {
+        requestBody.email = email;
+      }
+      if (phone) {
+        requestBody.phone = phone;
+      }
+
+      const res = await api.post('/resend-verification', requestBody);
+
+      if (res.status === 200) {
+        return { success: true, data: res.data };
+      } else {
+        return { success: false };
+      }
+    } catch (err: any) {
+      console.error('Resend verification error:', err.response?.data);
+
+      let message = 'Failed to resend verification code';
+      if (err.response?.data?.detail) {
+        message = err.response.data.detail;
       }
 
       Alert.alert('Error', message);
@@ -176,6 +261,9 @@ export const useRegister = (navigation: any, setIsLoading: any) => {
     togglePasswordVisibility,
     toggleConfirmPasswordVisibility,
     handleRegister,
+    verifyEmail,
+    verifyPhone,
+    resendVerificationCode,
     updateOnboardingData,
   };
 };

@@ -1,7 +1,7 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
-import { Text, View } from 'react-native';
+import { Text, View, Platform } from 'react-native';
 import { CalendarScreen } from '../screens/tabs/calender';
 import { ArticlesScreen } from './tabs/articles';
 import { ArticleDetailScreen } from './tabs/ArticleDetailScreen';
@@ -40,7 +40,7 @@ const TabIcon = ({ iconName, focused }:any) => (
     height: 24,
   }}>
     <Text style={{ 
-      fontSize: focused ? 26 : 24, 
+      fontSize: focused ? 22 : 20, // Reduced icon size slightly
       opacity: focused ? 1 : 0.7,
     }}>
       {iconName}
@@ -76,9 +76,9 @@ const AppNavigator = () => {
         tabBarStyle: {
           borderTopWidth: 0,
           backgroundColor: '#FFFFFF',
-          height: 70,
+          height: Platform.OS === 'ios' ? 90 : 80, // Increased height for both platforms
           paddingTop: 8,
-          paddingBottom: 12,
+          paddingBottom: Platform.OS === 'ios' ? 20 : 12, // More bottom padding for iOS
           shadowColor: '#000',
           shadowOffset: {
             width: 0,
@@ -89,12 +89,14 @@ const AppNavigator = () => {
           elevation: 8,
         },
         tabBarLabelStyle: {
-          fontSize: 11,
+          fontSize: 10, // Slightly smaller font
           fontWeight: '600',
-          marginTop: 4,
+          marginTop: 2, // Reduced margin between icon and label
+          marginBottom: 2,
         },
         tabBarIconStyle: {
-          marginTop: 2,
+          marginTop: 4, // Adjusted top margin
+          marginBottom: 0,
         }
       })}
     >
