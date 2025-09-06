@@ -15,7 +15,7 @@
     "assetBundlePatterns": ["**/*"],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.sumi45.goutamwebapp",
+      "bundleIdentifier": "com.sumi45.periodbear",
       "buildNumber": "1",
       "infoPlist": {
         "NSCameraUsageDescription": "This app uses camera for scanning and photo features",
@@ -28,7 +28,7 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.sumi45.goutamwebapp",
+      "package": "com.sumi45.periodbear",
       "versionCode": 1,
       "permissions": [
         "CAMERA",
@@ -42,16 +42,16 @@
     "web": {
       "favicon": "./assets/favicon.png"
     },
-    "extra": {
-      "eas": {
-        "projectId": "b49a53a4-2916-49e4-9f58-466013d5da3d"
-      }
-    },
     "updates": {
       "url": "https://u.expo.dev/b49a53a4-2916-49e4-9f58-466013d5da3d"
     },
     "runtimeVersion": {
       "policy": "appVersion"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "919ae2bc-b802-478d-b513-0839636c1ea4"
+      }
     }
   }
 }

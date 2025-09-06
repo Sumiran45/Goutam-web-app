@@ -25,4 +25,5 @@ export type RootStackParamList = {
   ProductDetailScreen: { product: any };
   AddProductScreen: undefined;
   EditProductScreen: {product: any};
+  Settings: undefined;
 };

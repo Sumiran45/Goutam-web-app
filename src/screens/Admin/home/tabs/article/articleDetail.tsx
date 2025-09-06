@@ -9,6 +9,7 @@ import {
   Linking,
   Image,
   TextInput,
+  Platform,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome5';
 import { colors, moderateScale } from '../../../../../styles/admin/theme';
@@ -49,30 +50,86 @@ const ArticleDetailModal = ({ visible, onClose, article, onUpdate, onDelete }:an
 
   const getTestVideoUrl = () => {
     const testVideos = [
-      'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
-      'https://www.youtube.com/watch?v=9bZkp7q19f0',
-      'https://www.youtube.com/watch?v=kJQP7kiw5Fk',
-      'https://youtu.be/WZPY3xVedQc',
+      'https://www.youtube.com/watch?v=dQw4w9WgXcQ', // Rick Roll - very reliable
+      'https://www.youtube.com/watch?v=9bZkp7q19f0', // Gangnam Style - very reliable
+      'https://www.youtube.com/watch?v=kJQP7kiw5Fk', // Despacito - very reliable
+      'https://www.youtube.com/watch?v=fJ9rUzIMcZQ', // Bohemian Rhapsody - very reliable
     ];
     return testVideos[Math.floor(Math.random() * testVideos.length)];
   };
 
   const openVideo = async (videoUrl:any) => {
     try {
-      const supported = await Linking.canOpenURL(videoUrl);
-      if (supported) {
-        await Linking.openURL(videoUrl);
-      } else {
+      const videoId = extractYouTubeId(videoUrl);
+      
+      if (!videoId) {
+        Alert.alert('Invalid URL', 'Please provide a valid YouTube URL.');
+        return;
+      }
+
+      const youtubeAppUrl = `vnd.youtube://${videoId}`;
+      const youtubeWebUrl = `https://www.youtube.com/watch?v=${videoId}`;
+      const youtubeMobileUrl = `https://m.youtube.com/watch?v=${videoId}`;
+
+      let opened = false;
+
+      if (Platform.OS === 'ios') {
+        try {
+          const canOpenApp = await Linking.canOpenURL(youtubeAppUrl);
+          if (canOpenApp) {
+            await Linking.openURL(youtubeAppUrl);
+            opened = true;
+          }
+        } catch (error) {
+          console.log('YouTube app not available, trying web URL');
+        }
+      }
+
+      if (!opened) {
+        try {
+          const canOpenWeb = await Linking.canOpenURL(youtubeWebUrl);
+          if (canOpenWeb) {
+            await Linking.openURL(youtubeWebUrl);
+            opened = true;
+          }
+        } catch (error) {
+          console.log('Regular YouTube URL failed, trying mobile URL');
+        }
+      }
+
+      if (!opened) {
+        try {
+          const canOpenMobile = await Linking.canOpenURL(youtubeMobileUrl);
+          if (canOpenMobile) {
+            await Linking.openURL(youtubeMobileUrl);
+            opened = true;
+          }
+        } catch (error) {
+          console.log('Mobile YouTube URL also failed');
+        }
+      }
+
+      if (!opened) {
         Alert.alert(
           'Cannot Open Video',
-          'Unable to open the video. Please check if you have a compatible app installed.',
-          [{ text: 'OK' }]
+          'Unable to open the video. Please ensure you have YouTube installed or try again later.',
+          [
+            { text: 'Cancel', style: 'cancel' },
+            { 
+              text: 'Try Again', 
+              onPress: () => {
+                Linking.openURL(videoUrl).catch(() => {
+                  Alert.alert('Error', 'Failed to open video. Please check your internet connection.');
+                });
+              }
+            }
+          ]
         );
       }
     } catch (error) {
       Alert.alert(
         'Error',
-        'An error occurred while trying to open the video.',
+        'An error occurred while trying to open the video. Please try again.',
         [{ text: 'OK' }]
       );
     }
@@ -87,6 +144,14 @@ const ArticleDetailModal = ({ visible, onClose, article, onUpdate, onDelete }:an
     if (!editedContent.trim()) {
       Alert.alert('Error', 'Please enter content for the article.');
       return;
+    }
+
+    if (editedVideoUrl.trim()) {
+      const videoId = extractYouTubeId(editedVideoUrl.trim());
+      if (!videoId) {
+        Alert.alert('Invalid URL', 'Please enter a valid YouTube URL.');
+        return;
+      }
     }
 
     try {
@@ -155,12 +220,18 @@ const ArticleDetailModal = ({ visible, onClose, article, onUpdate, onDelete }:an
           <View style={styles.videoEditContainer}>
             <TextInput
               style={styles.videoUrlInput}
-              placeholder="YouTube URL (optional)"
+              placeholder="YouTube URL (e.g., https://www.youtube.com/watch?v=...)"
               placeholderTextColor={colors.text.placeholder}
               value={editedVideoUrl}
               onChangeText={setEditedVideoUrl}
               multiline={false}
+              keyboardType="url"
+              autoCapitalize="none"
+              autoCorrect={false}
             />
+            {editedVideoUrl.trim() && !extractYouTubeId(editedVideoUrl.trim()) && (
+              <Text style={styles.errorText}>Please enter a valid YouTube URL</Text>
+            )}
           </View>
         ) : (
           <TouchableOpacity
@@ -190,7 +261,9 @@ const ArticleDetailModal = ({ visible, onClose, article, onUpdate, onDelete }:an
 
             <View style={styles.videoInfo}>
               <Text style={styles.videoTitle}>Watch Video</Text>
-              <Text style={styles.videoSubtitle}>Tap to open in your video app</Text>
+              <Text style={styles.videoSubtitle}>
+                {Platform.OS === 'ios' ? 'Tap to open in YouTube app' : 'Tap to open video'}
+              </Text>
               {!article.videoUrl && (
                 <Text style={styles.testVideoLabel}>(Test Video)</Text>
               )}
@@ -199,7 +272,9 @@ const ArticleDetailModal = ({ visible, onClose, article, onUpdate, onDelete }:an
         )}
 
         <Text style={styles.videoDescription}>
-          {isEditing ? 'Enter a YouTube URL for the article video' : 'Tap above to watch the video for additional insights on this topic.'}
+          {isEditing 
+            ? 'Enter a valid YouTube URL. The video will open in the YouTube app when tapped.' 
+            : 'Tap above to watch the video. It will open in your YouTube app or browser.'}
         </Text>
       </View>
     );

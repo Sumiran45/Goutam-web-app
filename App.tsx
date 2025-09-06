@@ -27,6 +27,7 @@ import AddProductScreen from './src/screens/Admin/home/tabs/products/addProductS
 import EditProductScreen from './src/screens/Admin/home/tabs/products/editProductScreen';
 import { SymptomProvider } from './src/Context/SymptomContext';
 import { LocationProvider } from './src/Context/LocationContext';
+import { SettingsScreen } from './src/screens/tabs/settings';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -58,6 +59,7 @@ export default function App() {
               <Stack.Screen name="ProductDetailScreen" component={ProductDetailScreen} options={{ headerShown: false }}/>
               <Stack.Screen name="AddProductScreen" component={AddProductScreen} options={{ headerShown: false }}/>
               <Stack.Screen name="EditProductScreen" component={EditProductScreen} options={{ headerShown: false }}/>
+              <Stack.Screen name="Settings" component={SettingsScreen} options={{ headerShown: false }}/>
             </Stack.Navigator>
           </CartProvider>
         </SymptomProvider>

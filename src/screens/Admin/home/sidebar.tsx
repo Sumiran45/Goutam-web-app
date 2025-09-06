@@ -5,13 +5,26 @@ import Icon from 'react-native-vector-icons/FontAwesome5';
 import NavItem from '../home/navItem';
 import { colors, moderateScale, verticalScale } from '../../../styles/admin/theme';
 
+import { useNavigation } from '@react-navigation/native';
+import { StackNavigationProp } from '@react-navigation/stack';
+import { RootStackParamList } from '../../../controller/RootStackParamList';
+
 type SidebarProps = {
   activeTab: string;
   setActiveTab: (tab: string) => void;
   closeSidebar: () => void;
 };
+type SidebarNavigationProp = StackNavigationProp<RootStackParamList, 'AdminScreen'>;
 
 const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, closeSidebar }) => {
+  const navigation = useNavigation<SidebarNavigationProp>();
+  
+  const handleLogout = () => {
+    navigation.reset({
+      index: 0,
+      routes: [{ name: 'Login' }],
+    });
+  };
   const handleNavPress = (tabName: string) => {
     setActiveTab(tabName);
     closeSidebar();
@@ -72,13 +85,19 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, closeSidebar
         <NavItem
           icon="cog"
           label="Settings"
-          isActive={activeTab === 'settings'}
-          onPress={() => handleNavPress('settings')}
+          isActive={false}
+          onPress={() => {
+            closeSidebar();
+            navigation.navigate('Settings');
+          }}
         />
       </ScrollView>
 
       <View style={styles.sidebarFooter}>
-        <TouchableOpacity style={styles.logoutButton}>
+        <TouchableOpacity 
+          style={styles.logoutButton}
+          onPress={handleLogout}
+        >
           <Icon name="sign-out-alt" size={moderateScale(16)} color={colors.text.white} />
           <Text style={styles.logoutText}>Logout</Text>
         </TouchableOpacity>

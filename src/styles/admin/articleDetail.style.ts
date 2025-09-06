@@ -323,6 +323,15 @@ const styles = StyleSheet.create({
   disabledButton: {
     opacity: 0.6,
   },
+  errorText: {
+    color: colors.error || '#FF3B30', 
+    fontSize: moderateScale(12),
+    fontFamily: 'System', 
+    marginTop: moderateScale(4),
+    marginLeft: moderateScale(2),
+    fontWeight: '400',
+    lineHeight: moderateScale(16),
+  },
 });
 
 export default styles;

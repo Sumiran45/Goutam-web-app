@@ -48,6 +48,11 @@ const QuickActions = ({
     setIsAddUserModalVisible(false);
   };
 
+  const handleSettingsPress = () => {
+    console.log('Settings Pressed');
+    (navigation as any).navigate('Settings');
+  };
+
   const actions = [
     { 
       icon: 'user-plus', 
@@ -73,9 +78,7 @@ const QuickActions = ({
       icon: 'cog', 
       label: 'Settings', 
       color: colors.info,
-      onPress: () => {
-        console.log('Settings pressed');
-      }
+      onPress: handleSettingsPress
     },
   ];
 

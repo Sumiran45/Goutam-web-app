@@ -60,7 +60,6 @@ const DoctorsScreen: React.FC<DoctorsScreenProps> = ({ navigation }) => {
 
   useEffect(() => {
     if (location) {
-      console.log('📍 Location updated, fetching doctors:', location);
       loadDoctors();
     }
   }, [location]);
@@ -70,7 +69,6 @@ const DoctorsScreen: React.FC<DoctorsScreenProps> = ({ navigation }) => {
   }, [searchQuery, selectedSpecialty, doctors]);
 
   const loadInitialData = async (): Promise<void> => {
-    console.log('🚀 Loading initial data...');
     try {
       await loadSpecialties();
 
@@ -82,12 +80,10 @@ const DoctorsScreen: React.FC<DoctorsScreenProps> = ({ navigation }) => {
 
   const loadSpecialties = async (): Promise<void> => {
     try {
-      console.log('🔍 Loading specialties...');
       const specialtiesData = await getSpecialties();
 
       if (specialtiesData && specialtiesData.length > 0) {
         const specialtyNames = specialtiesData.map((spec: any) => spec.name);
-        console.log('✅ Loaded specialties:', specialtyNames);
         setSpecialties(specialtyNames);
       }
     } catch (error) {
@@ -97,14 +93,12 @@ const DoctorsScreen: React.FC<DoctorsScreenProps> = ({ navigation }) => {
 
   const loadDoctors = async (): Promise<void> => {
     if (!location) {
-      console.log('⏳ No location available, waiting...');
       setLoading(false);
       return;
     }
 
     setLoading(true);
     try {
-      console.log('🔍 Loading doctors for location:', location);
 
       const doctorsData = await getNearbyDoctors(
         location.latitude,
@@ -113,7 +107,6 @@ const DoctorsScreen: React.FC<DoctorsScreenProps> = ({ navigation }) => {
         selectedSpecialty === 'All' ? undefined : selectedSpecialty
       );
 
-      console.log('✅ Loaded doctors:', doctorsData.length);
       setDoctors(doctorsData);
 
     } catch (error) {
@@ -132,7 +125,6 @@ const DoctorsScreen: React.FC<DoctorsScreenProps> = ({ navigation }) => {
   };
 
   const onRefresh = async (): Promise<void> => {
-    console.log('🔄 Refreshing data...');
     setRefreshing(true);
     try {
       await getCurrentLocation();
@@ -149,7 +141,6 @@ const DoctorsScreen: React.FC<DoctorsScreenProps> = ({ navigation }) => {
   };
 
   const filterDoctors = (): void => {
-    console.log('🔍 Filtering doctors with:', { searchQuery, selectedSpecialty, totalDoctors: doctors.length });
 
     let filtered = doctors;
 
@@ -157,7 +148,6 @@ const DoctorsScreen: React.FC<DoctorsScreenProps> = ({ navigation }) => {
       filtered = filtered.filter(doctor =>
         doctor.specialty.toLowerCase().includes(selectedSpecialty.toLowerCase())
       );
-      console.log('📋 After specialty filter:', filtered.length);
     }
 
     if (searchQuery) {
@@ -165,32 +155,25 @@ const DoctorsScreen: React.FC<DoctorsScreenProps> = ({ navigation }) => {
         doctor.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         doctor.specialty.toLowerCase().includes(searchQuery.toLowerCase())
       );
-      console.log('🔍 After search filter:', filtered.length);
     }
 
     if (location) {
       filtered.sort((a, b) => a.distance - b.distance);
-      console.log('📍 Sorted by distance');
     } else {
       filtered.sort((a, b) => b.rating - a.rating);
-      console.log('⭐ Sorted by rating');
     }
 
     setFilteredDoctors(filtered);
-    console.log('✅ Final filtered doctors:', filtered.length);
   };
 
   const handleCall = async (doctor: Doctor): Promise<void> => {
     try {
-      console.log('📞 Handling call for doctor:', doctor.name);
 
       const callResponse = await initiateCall(doctor.id);
 
       if (callResponse.phone) {
-        console.log('📞 Calling:', callResponse.phone);
         Linking.openURL(`tel:${callResponse.phone}`);
       } else {
-        console.log('📞 Fallback calling:', doctor.phone);
         Linking.openURL(`tel:${doctor.phone}`);
       }
 
@@ -201,7 +184,6 @@ const DoctorsScreen: React.FC<DoctorsScreenProps> = ({ navigation }) => {
   };
 
   const handleEmail = (email: string): void => {
-    console.log('📧 Opening email for:', email);
     Linking.openURL(`mailto:${email}`);
   };
 
@@ -267,7 +249,6 @@ const DoctorsScreen: React.FC<DoctorsScreenProps> = ({ navigation }) => {
         selectedSpecialty === item && styles.selectedSpecialty
       ]}
       onPress={() => {
-        console.log('🏷️ Selected specialty:', item);
         setSelectedSpecialty(item);
       }}
     >
